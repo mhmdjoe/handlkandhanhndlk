@@ -23,12 +23,14 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
   bool _isWholeTripView = true; // Default to showing the Whole Trip
   int _selectedDay = 1;
   late String _selectedHotelBudget;
+  late DateTime _selectedStartDate;
 
   @override
   void initState() {
     super.initState();
     _currentTrip = widget.trip;
     _selectedHotelBudget = _currentTrip.hotelBudgetTier;
+    _selectedStartDate = _currentTrip.startDate;
   }
 
   @override
@@ -45,6 +47,8 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
       orElse: () => TourismDatabase.destinations.first,
     );
 
+    final isNoHotel = _selectedHotelBudget == 'No Hotel Needed';
+
     // Filter hotels matching budget or destination
     final matchingHotels = TourismDatabase.hotels.where((h) {
       if (_selectedHotelBudget == 'Luxury') return h.starRating == 5;
@@ -57,9 +61,9 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
         ? TourismDatabase.hotels.firstWhere((h) => h.id == _currentTrip.selectedHotelId, orElse: () => matchingHotels.first)
         : (matchingHotels.isNotEmpty ? matchingHotels.first : TourismDatabase.hotels.first);
 
-    // Calculate total cost including hotel stay
-    final hotelTotalEgp = selectedHotel.pricePerNightEgp * totalDays;
-    final hotelTotalUsd = selectedHotel.pricePerNightUsd * totalDays;
+    // Calculate total cost including hotel stay (or 0 if No Hotel Needed)
+    final hotelTotalEgp = isNoHotel ? 0.0 : (selectedHotel.pricePerNightEgp * totalDays);
+    final hotelTotalUsd = isNoHotel ? 0.0 : (selectedHotel.pricePerNightUsd * totalDays);
     final grandTotalEgp = _currentTrip.totalCostEgp + hotelTotalEgp;
     final grandTotalUsd = _currentTrip.totalCostUsd + hotelTotalUsd;
 
@@ -77,40 +81,84 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
               );
             },
           ),
+          // Delete Trip Button
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+            onPressed: () => _showDeleteTripConfirmation(context, provider, isAr),
+          ),
         ],
       ),
       body: Column(
         children: [
-          // Total Budget & Refined Active Status Banner (Without "Draft" text)
+          // Total Budget & Date Booking Banner
           Container(
             padding: const EdgeInsets.all(16),
             color: AppColors.nileTeal,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      loc.translate('estimatedCost'),
-                      style: const TextStyle(color: AppColors.desertSand, fontSize: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          loc.translate('estimatedCost'),
+                          style: const TextStyle(color: AppColors.desertSand, fontSize: 12),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          provider.formatPrice(grandTotalEgp, grandTotalUsd),
+                          style: const TextStyle(color: AppColors.papyrusGold, fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      provider.formatPrice(grandTotalEgp, grandTotalUsd),
-                      style: const TextStyle(color: AppColors.papyrusGold, fontSize: 20, fontWeight: FontWeight.bold),
+
+                    // Date Picker Trigger Button
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: _selectedStartDate,
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                        );
+                        if (picked != null) {
+                          setState(() => _selectedStartDate = picked);
+                        }
+                      },
+                      icon: const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.papyrusGold),
+                      label: Text(
+                        '${_selectedStartDate.day}/${_selectedStartDate.month}/${_selectedStartDate.year}',
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.papyrusGold),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      ),
                     ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.papyrusGold,
-                    borderRadius: BorderRadius.circular(20),
+                const SizedBox(height: 12),
+
+                // Confirm & Book Journey Button
+                ElevatedButton.icon(
+                  onPressed: () => _showBookingConfirmationModal(
+                    context,
+                    provider,
+                    isAr,
+                    grandTotalEgp,
+                    grandTotalUsd,
+                    selectedHotel,
+                    totalDays,
+                    isNoHotel,
                   ),
-                  child: Text(
-                    isAr ? 'رحلة قائمة' : 'Active Journey',
-                    style: const TextStyle(color: AppColors.nileTeal, fontWeight: FontWeight.bold, fontSize: 12),
+                  icon: const Icon(Icons.check_circle_outline_rounded),
+                  label: Text(isAr ? 'تأكيد وحجز الرحلة الآن' : 'Book & Reserve Journey Now'),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(44),
+                    backgroundColor: AppColors.papyrusGold,
+                    foregroundColor: AppColors.nileTeal,
                   ),
                 ),
               ],
@@ -205,6 +253,154 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
     );
   }
 
+  void _showDeleteTripConfirmation(BuildContext context, AppProvider provider, bool isAr) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(isAr ? 'حذف الرحلة؟' : 'Delete Trip?'),
+          content: Text(
+            isAr
+                ? 'هل أنت تأكد من رغبتك في حذف هذه الرحلة نهائياً من حسابك؟'
+                : 'Are you sure you want to permanently delete this trip from your saved journeys?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(isAr ? 'إلغاء' : 'Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                provider.removeTrip(_currentTrip.id);
+                Navigator.pop(context); // Close dialog
+                Navigator.pop(context); // Return to MyTripsScreen
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+              child: Text(isAr ? 'حذف الرحلة' : 'Delete Trip'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showBookingConfirmationModal(
+    BuildContext context,
+    AppProvider provider,
+    bool isAr,
+    double totalEgp,
+    double totalUsd,
+    Hotel selectedHotel,
+    int tripDays,
+    bool isNoHotel,
+  ) {
+    final endDate = _selectedStartDate.add(Duration(days: tripDays));
+
+    // Update trip status to confirmed
+    final updatedTrip = Trip(
+      id: _currentTrip.id,
+      title: _currentTrip.title,
+      destinationId: _currentTrip.destinationId,
+      startDate: _selectedStartDate,
+      endDate: endDate,
+      daysCount: tripDays,
+      items: _currentTrip.items,
+      totalCostEgp: totalEgp,
+      totalCostUsd: totalUsd,
+      status: 'Confirmed',
+      travelerCount: _currentTrip.travelerCount,
+      selectedHotelId: isNoHotel ? null : selectedHotel.id,
+      hotelBudgetTier: _selectedHotelBudget,
+    );
+
+    provider.updateTrip(updatedTrip);
+    setState(() => _currentTrip = updatedTrip);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: AppColors.verifiedGreen,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check_rounded, color: Colors.white, size: 40),
+              ),
+              const SizedBox(height: 16),
+
+              Text(
+                isAr ? 'تم حجز وتأكيد الرحلة بنجاح!' : 'Journey Successfully Booked!',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.nileTeal),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${isAr ? 'كود الحجز' : 'Booking Ref'}: #HNDLK-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.terracotta, fontSize: 13),
+              ),
+              const Divider(height: 24),
+
+              // Booking Details Summary Table
+              _receiptRow(isAr ? 'اسم الرحلة' : 'Trip Title', _currentTrip.title),
+              _receiptRow(isAr ? 'تاريخ البداية' : 'Start Date', '${_selectedStartDate.day}/${_selectedStartDate.month}/${_selectedStartDate.year}'),
+              _receiptRow(isAr ? 'تاريخ النهاية' : 'End Date', '${endDate.day}/${endDate.month}/${endDate.year}'),
+              _receiptRow(isAr ? 'عدد المسافرين' : 'Travelers', '${_currentTrip.travelerCount}'),
+              _receiptRow(
+                isAr ? 'الإقامة' : 'Accommodation',
+                isNoHotel
+                    ? (isAr ? 'إقامة شخصية خاصة (بدون فندق)' : 'Personal Stay (No Hotel)')
+                    : (isAr ? selectedHotel.nameAr : selectedHotel.nameEn),
+              ),
+              _receiptRow(isAr ? 'التكلفة الكلية' : 'Total Amount', provider.formatPrice(totalEgp, totalUsd), isBold: true),
+
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  backgroundColor: AppColors.nileTeal,
+                ),
+                child: Text(isAr ? 'تم، العودة للرحلة' : 'Done & Return'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _receiptRow(String label, String val, {bool isBold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 13)),
+          Text(
+            val,
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+              fontSize: isBold ? 15 : 13,
+              color: isBold ? AppColors.terracotta : AppColors.charcoal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildWholeTripListView(
     BuildContext context,
     AppProvider provider,
@@ -214,8 +410,9 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
     Hotel selectedHotel,
     int tripDays,
   ) {
-    final hotelTotalEgp = selectedHotel.pricePerNightEgp * tripDays;
-    final hotelTotalUsd = selectedHotel.pricePerNightUsd * tripDays;
+    final isNoHotel = _selectedHotelBudget == 'No Hotel Needed';
+    final hotelTotalEgp = isNoHotel ? 0.0 : selectedHotel.pricePerNightEgp * tripDays;
+    final hotelTotalUsd = isNoHotel ? 0.0 : selectedHotel.pricePerNightUsd * tripDays;
 
     return ListView(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 110),
@@ -251,23 +448,28 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Budget Tier Selector Chips
+              // Budget Tier Selector Chips (Including No Hotel Needed!)
               Text(
-                isAr ? 'فئة ميزانية الإقامة:' : 'Hotel Budget Tier:',
+                isAr ? 'فئة خيار الإقامة:' : 'Accommodation Option:',
                 style: const TextStyle(fontSize: 12, color: AppColors.textMuted, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
 
               Wrap(
                 spacing: 8,
-                children: ['Budget', 'Moderate', 'Luxury', 'Eco Lodge'].map((tier) {
+                runSpacing: 8,
+                children: ['No Hotel Needed', 'Budget', 'Moderate', 'Luxury', 'Eco Lodge'].map((tier) {
                   final isSel = _selectedHotelBudget == tier;
+                  final labelText = tier == 'No Hotel Needed'
+                      ? (isAr ? 'إقامة شخصية (بدون فندق)' : 'No Hotel Needed')
+                      : tier;
+
                   return ChoiceChip(
-                    label: Text(tier),
+                    label: Text(labelText),
                     selected: isSel,
-                    selectedColor: AppColors.papyrusGold,
+                    selectedColor: tier == 'No Hotel Needed' ? AppColors.terracotta : AppColors.papyrusGold,
                     labelStyle: TextStyle(
-                      color: isSel ? AppColors.nileTeal : AppColors.charcoal,
+                      color: isSel ? (tier == 'No Hotel Needed' ? Colors.white : AppColors.nileTeal) : AppColors.charcoal,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
@@ -281,49 +483,84 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Selected Hotel Banner
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.desertSand,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.borderLight),
-                ),
-                child: Row(
-                  children: [
-                    SafeNetworkImage(
-                      imageUrl: selectedHotel.imageUrl,
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isAr ? selectedHotel.nameAr : selectedHotel.nameEn,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            '${selectedHotel.starRating}★ • ${isAr ? selectedHotel.cityAr : selectedHotel.cityEn}',
-                            style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${provider.formatPrice(hotelTotalEgp, hotelTotalUsd)} ($tripDays ${isAr ? 'ليالي' : 'nights'})',
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.terracotta),
-                          ),
-                        ],
+              // Selected Hotel Banner OR No Hotel Banner
+              if (isNoHotel)
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.desertSand,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.terracotta.withValues(alpha: 0.5)),
+                  ),
+                  child: Row(
+                    children: [
+                      const CircleAvatar(
+                        backgroundColor: AppColors.terracotta,
+                        radius: 20,
+                        child: Icon(Icons.home_outlined, color: Colors.white, size: 22),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isAr ? 'إقامة شخصية خاصة' : 'Personal Accommodation',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            Text(
+                              isAr ? 'لن يتم إضافة أية تكاليف حجز فندق للرحلة' : 'No hotel reservation fees added to total trip cost',
+                              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.desertSand,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.borderLight),
+                  ),
+                  child: Row(
+                    children: [
+                      SafeNetworkImage(
+                        imageUrl: selectedHotel.imageUrl,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isAr ? selectedHotel.nameAr : selectedHotel.nameEn,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '${selectedHotel.starRating}★ • ${isAr ? selectedHotel.cityAr : selectedHotel.cityEn}',
+                              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${provider.formatPrice(hotelTotalEgp, hotelTotalUsd)} ($tripDays ${isAr ? 'ليالي' : 'nights'})',
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.terracotta),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
         ),

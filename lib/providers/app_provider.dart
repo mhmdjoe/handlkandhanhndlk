@@ -98,6 +98,12 @@ class AppProvider extends ChangeNotifier {
     }
   }
 
+  void removeTrip(String tripId) {
+    _userTrips.removeWhere((t) => t.id == tripId);
+    StorageService.saveTrips(_userTrips);
+    notifyListeners();
+  }
+
   void setDestinationFilter(String destId) {
     _selectedDestinationId = destId;
     notifyListeners();

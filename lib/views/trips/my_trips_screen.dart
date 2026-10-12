@@ -35,7 +35,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
         title: Text(loc.translate('myTripsTitle')),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.nileTeal),
+            icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.nileTeal, size: 28),
             onPressed: () {
               Navigator.push(
                 context,
@@ -122,6 +122,8 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 24),
+
+                          // Custom Trip Builder Button
                           ElevatedButton.icon(
                             onPressed: () {
                               Navigator.push(
@@ -129,9 +131,12 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                                 MaterialPageRoute(builder: (_) => const TripWizardScreen()),
                               );
                             },
-                            icon: const Icon(Icons.auto_awesome),
-                            label: Text(loc.translate('startPlanning')),
-                            style: ElevatedButton.styleFrom(backgroundColor: AppColors.terracotta),
+                            icon: const Icon(Icons.add_location_alt_rounded),
+                            label: Text(isAr ? 'صمم رحلتك بنفسك' : 'Build Custom Trip'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.nileTeal,
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                            ),
                           ),
                         ],
                       ),

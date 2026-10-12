@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_provider.dart';
 import '../../services/ai_assistant_service.dart';
-import '../../data/tourism_database.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import 'itinerary_detail_screen.dart';
@@ -31,8 +30,6 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
   final List<ChatMessage> _messages = [];
   final _inputController = TextEditingController();
   bool _isGenerating = false;
-  String _selectedDestinationId = 'cairo';
-  int _daysCount = 3;
 
   @override
   void initState() {
@@ -44,6 +41,12 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
         timestamp: DateTime.now(),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _inputController.dispose();
+    super.dispose();
   }
 
   void _handleSend([String? preset]) async {
@@ -58,8 +61,8 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
 
     final response = await AiAssistantService.processUserPrompt(
       prompt: query,
-      destinationId: _selectedDestinationId,
-      daysCount: _daysCount,
+      destinationId: 'cairo',
+      daysCount: 3,
       travelerCount: 2,
     );
 
@@ -106,6 +109,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     final provider = Provider.of<AppProvider>(context);
     final loc = AppLocalizations.of(context);
     final isAr = provider.isArabic;
+    final userName = provider.userProfile.name;
 
     return Scaffold(
       appBar: AppBar(
@@ -130,43 +134,6 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
       ),
       body: Column(
         children: [
-          // Destination & Days Quick Selector
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: AppColors.desertSand,
-            child: Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _selectedDestinationId,
-                      items: TourismDatabase.destinations.map((d) {
-                        return DropdownMenuItem(
-                          value: d.id,
-                          child: Text(isAr ? d.nameAr : d.nameEn, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _selectedDestinationId = val);
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                ChoiceChip(
-                  label: Text('$_daysCount ${isAr ? 'أيام' : 'Days'}'),
-                  selected: true,
-                  selectedColor: AppColors.papyrusGold,
-                  onSelected: (_) {
-                    setState(() {
-                      _daysCount = _daysCount == 3 ? 5 : 3;
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-
           // Messages List
           Expanded(
             child: ListView.builder(
@@ -177,7 +144,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                 return Align(
                   alignment: msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
+                    margin: const EdgeInsets.only(bottom: 14),
                     padding: const EdgeInsets.all(14),
                     constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
                     decoration: BoxDecoration(
@@ -195,13 +162,43 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                         ),
                       ],
                     ),
-                    child: Text(
-                      msg.text,
-                      style: TextStyle(
-                        color: msg.isUser ? Colors.white : AppColors.charcoal,
-                        fontSize: 14,
-                        height: 1.4,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Sender Name Header Badge
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              msg.isUser ? Icons.person_pin_rounded : Icons.auto_awesome_rounded,
+                              size: 14,
+                              color: msg.isUser ? AppColors.papyrusGold : AppColors.terracotta,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              msg.isUser
+                                  ? (userName.isNotEmpty ? userName : (isAr ? 'أنت' : 'You'))
+                                  : 'HNHNDLK AI',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: msg.isUser ? AppColors.papyrusGold : AppColors.terracotta,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+
+                        // Message Text Body
+                        Text(
+                          msg.text,
+                          style: TextStyle(
+                            color: msg.isUser ? Colors.white : AppColors.charcoal,
+                            fontSize: 14,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -217,7 +214,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                 children: [
                   SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.terracotta)),
                   SizedBox(width: 8),
-                  Text('HNHNDLK AI is planning your trip...', style: TextStyle(color: AppColors.terracotta, fontSize: 13, fontWeight: FontWeight.bold)),
+                  Text('HNHNDLK AI is thinking...', style: TextStyle(color: AppColors.terracotta, fontSize: 13, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -229,9 +226,9 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                _buildPresetChip('3 days in Cairo with history & pyramids'),
-                _buildPresetChip('Sea, diving & relaxation in Red Sea'),
-                _buildPresetChip('Budget tour of Luxor & Aswan'),
+                _buildPresetChip('3 days in Cairo for 2 travelers'),
+                _buildPresetChip('5 days in Red Sea & Hurghada for family'),
+                _buildPresetChip('7 days tour of Luxor & Aswan'),
               ],
             ),
           ),
