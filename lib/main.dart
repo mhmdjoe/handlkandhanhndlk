@@ -8,11 +8,11 @@ import 'views/onboarding/onboarding_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const HndlkApp());
+  runApp(const HandelakApp());
 }
 
-class HndlkApp extends StatelessWidget {
-  const HndlkApp({super.key});
+class HandelakApp extends StatelessWidget {
+  const HandelakApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class HndlkApp extends StatelessWidget {
       child: Consumer<AppProvider>(
         builder: (context, appProvider, child) {
           return MaterialApp(
-            title: 'HNDLK W HNHNDLK',
+            title: 'Handelak',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             locale: appProvider.locale,

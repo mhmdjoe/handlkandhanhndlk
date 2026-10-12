@@ -6,7 +6,6 @@ import '../../models/models.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/network_image_with_fallback.dart';
-import '../../widgets/glassmorphic_container.dart';
 import '../explore/attraction_detail_screen.dart';
 import '../explore/destination_detail_screen.dart';
 
@@ -47,8 +46,8 @@ class HomeScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppColors.nileTeal.withValues(alpha: 0.9),
-                          AppColors.nileTeal.withValues(alpha: 0.4),
+                          Colors.black.withValues(alpha: 0.82),
+                          Colors.black.withValues(alpha: 0.35),
                           Colors.transparent,
                         ],
                         begin: Alignment.bottomCenter,
@@ -63,22 +62,22 @@ class HomeScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          loc.translate('appName'),
-                          style: const TextStyle(
-                            color: AppColors.papyrusGold,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22,
-                            letterSpacing: 1.1,
-                          ),
+                        Image.asset(
+                          'assets/images/logo.png',
+                          height: 58,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         Text(
                           loc.translate('tagline'),
                           style: const TextStyle(
                             color: AppColors.desertSand,
                             fontSize: 13,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -105,28 +104,43 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Dual Core Promise Glassmorphic Banner Cards
+                  // Dual Promise Action Cards (Discover Egypt & Smart AI Planner)
                   Row(
                     children: [
                       Expanded(
                         child: GestureDetector(
                           onTap: onExploreTap,
-                          child: GlassContainer(
-                            blurSigma: 12,
-                            tintColor: AppColors.nileTeal.withValues(alpha: 0.88),
-                            borderColor: AppColors.papyrusGold.withValues(alpha: 0.35),
+                          child: Container(
                             padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryPurple, // Solid Deep Royal Purple (#4300C8)
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primaryPurple.withValues(alpha: 0.30),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Row(
+                                Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Icon(Icons.search_outlined, color: AppColors.papyrusGold, size: 28),
-                                    Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.20),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.explore_rounded, color: Colors.white, size: 24),
+                                    ),
+                                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 14),
                                 Text(
                                   loc.translate('hndlkTitle'),
                                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
@@ -135,8 +149,8 @@ class HomeScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  isAr ? 'هنوريك كل مكان' : 'Discover Places',
-                                  style: const TextStyle(color: AppColors.desertSand, fontSize: 12),
+                                  isAr ? 'هنوريك كل مكان في مصر' : 'Discover All Places',
+                                  style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12, fontWeight: FontWeight.w500),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -149,22 +163,37 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: GestureDetector(
                           onTap: onPlannerTap,
-                          child: GlassContainer(
-                            blurSigma: 12,
-                            tintColor: AppColors.terracotta.withValues(alpha: 0.92),
-                            borderColor: Colors.white.withValues(alpha: 0.35),
+                          child: Container(
                             padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryOrange, // Solid Vibrant Sunset Orange (#FF5008)
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primaryOrange.withValues(alpha: 0.30),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Row(
+                                Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 28),
-                                    Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.20),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 24),
+                                    ),
+                                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 14),
                                 Text(
                                   loc.translate('hnhndlkTitle'),
                                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
@@ -173,8 +202,8 @@ class HomeScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  isAr ? 'هنخططلك الرحلة' : 'Smart AI Planner',
-                                  style: const TextStyle(color: AppColors.desertSand, fontSize: 12),
+                                  isAr ? 'هنخطط ونظبطلك الرحلة' : 'Smart AI Planner',
+                                  style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12, fontWeight: FontWeight.w500),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),

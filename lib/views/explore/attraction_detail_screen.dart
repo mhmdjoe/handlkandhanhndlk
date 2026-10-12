@@ -27,12 +27,30 @@ class AttractionDetailScreen extends StatelessWidget {
             expandedHeight: 280,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              background: Hero(
-                tag: 'attraction_${attraction.id}',
-                child: SafeNetworkImage(
-                  imageUrl: attraction.imageUrl,
-                  fit: BoxFit.cover,
-                ),
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Hero(
+                    tag: 'attraction_${attraction.id}',
+                    child: SafeNetworkImage(
+                      imageUrl: attraction.imageUrl,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withValues(alpha: 0.60),
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.60),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             actions: [

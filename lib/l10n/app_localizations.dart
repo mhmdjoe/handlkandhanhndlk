@@ -14,12 +14,12 @@ class AppLocalizations {
 
   static const _localizedValues = <String, Map<String, String>>{
     'en': {
-      'appName': 'HNDLK W HNHNDLK',
+      'appName': 'Handelak',
       'appSubtitle': 'Discover Egypt. We Plan The Journey.',
       'tagline': 'You choose the experience. We help plan the journey.',
-      'hndlkTitle': 'HNDLK (Discover)',
+      'hndlkTitle': 'Handelak (Discover)',
       'hndlkSubtitle': 'We show you every incredible experience in Egypt.',
-      'hnhndlkTitle': 'HNHNDLK (AI Planner)',
+      'hnhndlkTitle': 'Nhandelak (AI Planner)',
       'hnhndlkSubtitle': 'We organize, schedule & arrange everything for you.',
       
       // Nav
@@ -36,7 +36,7 @@ class AppLocalizations {
       'getStarted': 'Get Started',
       'skipQuiz': 'Skip to Exploration',
       'quizTitle': 'Personalize Your Egyptian Trip',
-      'quizSubtitle': 'Tell us your preferences so HNHNDLK can craft your ideal journey.',
+      'quizSubtitle': 'Tell us your preferences so Nhandelak can craft your ideal journey.',
       'travelStyle': 'Travel Style',
       'budgetTier': 'Budget Tier',
       'interests': 'Interests',
@@ -52,7 +52,7 @@ class AppLocalizations {
       'activeTrip': 'Active Trip',
       
       // Explore & Filters
-      'exploreEgypt': 'Explore Egypt (HNDLK)',
+      'exploreEgypt': 'Explore Egypt (Handelak)',
       'filterTitle': 'Filter Attractions',
       'governorate': 'Governorate / City',
       'allGovernorates': 'All Egypt',
@@ -73,7 +73,7 @@ class AppLocalizations {
       'saveFavorite': 'Save to Favorites',
       
       // Itinerary & Planner
-      'aiPlannerTitle': 'HNHNDLK AI Travel Assistant',
+      'aiPlannerTitle': 'Nhandelak AI Travel Assistant',
       'aiPlannerHint': 'Describe your dream trip (e.g., "3 days in Cairo with history & local food under \$150")...',
       'generateItinerary': 'Generate Smart Itinerary',
       'dailySchedule': 'Daily Schedule',
@@ -100,7 +100,7 @@ class AppLocalizations {
       
       // Trips & Dashboard
       'myTripsTitle': 'My Saved Trips',
-      'noTripsYet': 'No trips planned yet. Let HNHNDLK organize one for you!',
+      'noTripsYet': 'No trips planned yet. Let Nhandelak organize one for you!',
       'upcomingTrips': 'Upcoming Trips',
       'pastTrips': 'Past Trips',
       'statusDraft': 'Draft',
@@ -119,12 +119,12 @@ class AppLocalizations {
       'loginRegister': 'Login or Register',
     },
     'ar': {
-      'appName': 'هندلك وهنهندلك',
+      'appName': 'هندلك ونهندلك',
       'appSubtitle': 'استكشف مصر. وسيب التخطيط علينا.',
       'tagline': 'أنت اختار التجربة، وإحنا نهندلك الرحلة.',
       'hndlkTitle': 'هندلك (استكشف)',
       'hndlkSubtitle': 'هنوريك كل مكان وتجربة ساحرة تقدر تزورها في مصر.',
-      'hnhndlkTitle': 'هنهندلك (المخطط الذكي)',
+      'hnhndlkTitle': 'نهندلك (المخطط الذكي)',
       'hnhndlkSubtitle': 'هنخطط ونظبطلك جدول رحلتك ومواعيدك بالكامل لاتقلق.',
       
       // Nav
@@ -141,7 +141,7 @@ class AppLocalizations {
       'getStarted': 'ابدأ الآن',
       'skipQuiz': 'الانتقال للاستكشاف',
       'quizTitle': 'خصص تفضيلات رحلتك',
-      'quizSubtitle': 'أخبرنا بتفضيلاتك حتى يتمكن "هنهندلك" من تصميم رحلتك المثالية.',
+      'quizSubtitle': 'أخبرنا بتفضيلاتك حتى يتمكن "نهندلك" من تصميم رحلتك المثالية.',
       'travelStyle': 'أسلوب السفر',
       'budgetTier': 'الميزانية',
       'interests': 'الاهتمامات',
@@ -178,7 +178,7 @@ class AppLocalizations {
       'saveFavorite': 'حفظ في المفضلة',
       
       // Itinerary & Planner
-      'aiPlannerTitle': 'المساعد الذكي (هنهندلك)',
+      'aiPlannerTitle': 'المساعد الذكي (نهندلك)',
       'aiPlannerHint': 'اشرح رحلتك المثالية (مثال: "٣ أيام في القاهرة مع تركيز على الآثار والأكل الشعبي بميزانية متوسطة")...',
       'generateItinerary': 'إنشاء جدول الرحلة الذكي',
       'dailySchedule': 'الجدول اليومي',
@@ -205,7 +205,7 @@ class AppLocalizations {
       
       // Trips & Dashboard
       'myTripsTitle': 'رحلاتي المحفوظة',
-      'noTripsYet': 'لا توجد رحلات حتى الآن. دع "هنهندلك" ينظم لك أول رحلة!',
+      'noTripsYet': 'لا توجد رحلات حتى الآن. دع "نهندلك" ينظم لك أول رحلة!',
       'upcomingTrips': 'الرحلات القادمة',
       'pastTrips': 'الرحلات السابقة',
       'statusDraft': 'مسودة',

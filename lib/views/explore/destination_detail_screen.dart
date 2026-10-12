@@ -32,12 +32,30 @@ class DestinationDetailScreen extends StatelessWidget {
                 isAr ? destination.nameAr : destination.nameEn,
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
-              background: Hero(
-                tag: 'dest_${destination.id}',
-                child: SafeNetworkImage(
-                  imageUrl: destination.imageUrl,
-                  fit: BoxFit.cover,
-                ),
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Hero(
+                    tag: 'dest_${destination.id}',
+                    child: SafeNetworkImage(
+                      imageUrl: destination.imageUrl,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withValues(alpha: 0.70),
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.80),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

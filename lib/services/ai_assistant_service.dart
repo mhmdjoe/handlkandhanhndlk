@@ -155,7 +155,7 @@ class AiAssistantService {
 
     // 7. Generate Smart Trip Itinerary
     final trip = ItineraryEngine.generateAutoTrip(
-      title: 'HNHNDLK ${dest.nameEn} $targetDays-Day Journey',
+      title: 'Handelak ${dest.nameEn} $targetDays-Day Journey',
       destinationId: targetDestinationId,
       attractionIds: targetAttractionIds,
       startDate: DateTime.now().add(const Duration(days: 7)),
@@ -163,14 +163,14 @@ class AiAssistantService {
       travelerCount: targetTravelers,
     );
 
-    final textEn = '🤖 HNHNDLK AI Analysis Complete!\n\n'
+    final textEn = '🤖 Handelak AI Analysis Complete!\n\n'
         '• Destination: ${dest.nameEn}\n'
         '• Duration: $targetDays Days\n'
         '• Travelers: $targetTravelers Person(s)\n'
         '• Scheduled Visits: ${trip.items.length} verified experiences\n\n'
         '💡 Local Insider Tip: Visit early in the morning to beat the heat and crowds. All entrance fees and official operating hours have been verified against mota.gov.eg!';
 
-    final textAr = '🤖 اكتمل تحليل الذكاء الاصطناعي من "هنهندلك"!\n\n'
+    final textAr = '🤖 اكتمل تحليل الذكاء الاصطناعي من "Handelak"!\n\n'
         '• الوجهة: ${dest.nameAr}\n'
         '• المدة: $targetDays أيام\n'
         '• عدد المسافرين: $targetTravelers شخص\n'

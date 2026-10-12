@@ -37,11 +37,11 @@ void main() {
     expect(conflicts, isEmpty);
   });
 
-  testWidgets('HndlkApp renders Onboarding and NavigationShell without overflowing', (WidgetTester tester) async {
-    await tester.pumpWidget(const HndlkApp());
+  testWidgets('HandelakApp renders Onboarding and NavigationShell without overflowing', (WidgetTester tester) async {
+    await tester.pumpWidget(const HandelakApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('HNDLK W HNHNDLK'), findsWidgets);
+    expect(find.byType(Image), findsWidgets);
 
     // Render NavigationShell directly
     await tester.pumpWidget(

@@ -79,11 +79,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
     final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: AppColors.nileTeal,
+      backgroundColor: const Color(0xFF0F141A),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Dynamic Pharaonic / Egyptian Destination Background Image
+          // Responsive Full-Screen Egyptian Destination Photo (100% Clear View)
           Positioned.fill(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 600),
@@ -102,16 +102,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
             ),
           ),
 
-          // Nile Teal & Terracotta Sunset Ambient Gradient Overlay
+          // Clean Subtle Dark Vignette Overlay (Zero Purple Tint for Maximum Clarity)
           Container(
             width: screenSize.width,
             height: screenSize.height,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.nileTeal.withValues(alpha: 0.92),
-                  AppColors.nileTeal.withValues(alpha: 0.72),
-                  const Color(0xFF031220).withValues(alpha: 0.90),
+                  Colors.black.withValues(alpha: 0.65),
+                  Colors.black.withValues(alpha: 0.40),
+                  Colors.black.withValues(alpha: 0.85),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -136,22 +136,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                // Top Header Bar with Language Switcher
+                                // Top Header Bar with Official Logo & Language Switcher
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Row(
+                                    Row(
                                       children: [
-                                        Icon(Icons.auto_awesome_rounded, color: AppColors.papyrusGold, size: 22),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          'HNDLK W HNHNDLK',
-                                          style: TextStyle(
-                                            color: AppColors.papyrusGold,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                            letterSpacing: 1.2,
-                                          ),
+                                        Image.asset(
+                                          'assets/images/logo.png',
+                                          height: 52,
+                                          fit: BoxFit.contain,
+                                          filterQuality: FilterQuality.high,
+                                          errorBuilder: (_, _, _) => const Icon(Icons.auto_awesome_rounded, color: AppColors.papyrusGold, size: 28),
                                         ),
                                       ],
                                     ),
@@ -208,22 +204,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
       key: const ValueKey(0),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Pharaonic Welcome Card
+        // Welcome Card with Official Transparent Logo
         GlassContainer(
           blurSigma: 15,
-          tintColor: AppColors.papyrusGold.withValues(alpha: 0.12),
+          tintColor: Colors.black.withValues(alpha: 0.35),
           borderColor: AppColors.papyrusGold.withValues(alpha: 0.4),
           padding: const EdgeInsets.all(22),
           child: Column(
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.papyrusGold.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.papyrusGold, width: 1.5),
+              Image.asset(
+                'assets/images/logo.png',
+                height: 72,
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
+                errorBuilder: (_, _, _) => Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.papyrusGold.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.papyrusGold, width: 1.5),
+                  ),
+                  child: const Icon(Icons.explore_rounded, size: 48, color: AppColors.papyrusGold),
                 ),
-                child: const Icon(Icons.explore_rounded, size: 48, color: AppColors.papyrusGold),
               ),
               const SizedBox(height: 16),
               Text(
@@ -257,7 +259,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
           title: loc.translate('hndlkTitle'),
           subtitle: loc.translate('hndlkSubtitle'),
           icon: Icons.search_rounded,
-          color: AppColors.seaTurquoise,
+          color: AppColors.primaryPurple,
         ),
         const SizedBox(height: 12),
         _buildPromiseCard(
@@ -277,10 +279,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
             });
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.papyrusGold,
-            foregroundColor: AppColors.nileTeal,
+            backgroundColor: AppColors.primaryOrange,
+            foregroundColor: Colors.white,
             elevation: 4,
-            shadowColor: AppColors.papyrusGold.withValues(alpha: 0.4),
+            shadowColor: AppColors.primaryOrange.withValues(alpha: 0.4),
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
@@ -379,10 +381,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         ElevatedButton(
           onPressed: () => _showTravelersSelectionModal(context, appProvider, loc),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.papyrusGold,
-            foregroundColor: AppColors.nileTeal,
+            backgroundColor: AppColors.primaryOrange,
+            foregroundColor: Colors.white,
             elevation: 4,
-            shadowColor: AppColors.papyrusGold.withValues(alpha: 0.4),
+            shadowColor: AppColors.primaryOrange.withValues(alpha: 0.4),
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
@@ -477,9 +479,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                       return ChoiceChip(
                         label: Text(label),
                         selected: isSel,
-                        selectedColor: AppColors.papyrusGold,
+                        selectedColor: AppColors.primaryOrange,
                         labelStyle: TextStyle(
-                          color: isSel ? AppColors.nileTeal : AppColors.charcoal,
+                          color: isSel ? Colors.white : AppColors.charcoal,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         ),
@@ -498,7 +500,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                     label: Text(isAr ? 'تأكيد وإنشاء الرحلة المنهندلة' : 'Confirm & Generate Handled Trip'),
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size.fromHeight(52),
-                      backgroundColor: AppColors.nileTeal,
+                      backgroundColor: AppColors.primaryPurple,
                     ),
                   ),
                 ],
@@ -547,7 +549,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
     }
 
     final trip = ItineraryEngine.generateAutoTrip(
-      title: 'HNHNDLK $_selectedStyle Journey',
+      title: 'Handelak $_selectedStyle Journey',
       destinationId: destinationId,
       attractionIds: attractionIds,
       startDate: DateTime.now().add(const Duration(days: 7)),
@@ -577,10 +579,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.papyrusGold.withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.08),
+          color: isSelected ? AppColors.primaryOrange.withValues(alpha: 0.35) : Colors.black.withValues(alpha: 0.25),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppColors.papyrusGold : Colors.white.withValues(alpha: 0.25),
+            color: isSelected ? AppColors.primaryOrange : Colors.white.withValues(alpha: 0.35),
             width: isSelected ? 2.0 : 1.0,
           ),
         ),
@@ -588,7 +590,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
           mainAxisSize: MainAxisSize.min,
           children: [
             if (isSelected) ...[
-              const Icon(Icons.check_circle_rounded, color: AppColors.papyrusGold, size: 16),
+              const Icon(Icons.check_circle_rounded, color: AppColors.primaryOrange, size: 16),
               const SizedBox(width: 6),
             ],
             Text(
@@ -613,13 +615,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
   }) {
     return GlassContainer(
       blurSigma: 12,
-      tintColor: Colors.white.withValues(alpha: 0.08),
-      borderColor: color.withValues(alpha: 0.4),
+      tintColor: Colors.black.withValues(alpha: 0.35),
+      borderColor: color.withValues(alpha: 0.5),
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: color.withValues(alpha: 0.2),
+            backgroundColor: color.withValues(alpha: 0.25),
             radius: 24,
             child: Icon(icon, color: color, size: 28),
           ),

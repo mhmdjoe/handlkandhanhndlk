@@ -178,7 +178,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                             Text(
                               msg.isUser
                                   ? (userName.isNotEmpty ? userName : (isAr ? 'أنت' : 'You'))
-                                  : 'HNHNDLK AI',
+                                  : 'Handelak AI',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
