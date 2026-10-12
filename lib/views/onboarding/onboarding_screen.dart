@@ -25,6 +25,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
   int _step = 0; // 0: Welcome & Lang, 1: Quiz
   String _selectedStyle = 'History & Culture';
   String _selectedBudget = 'Moderate';
+  int _selectedDaysCount = 3; // Default 3 free days
 
   @override
   void initState() {
@@ -74,6 +75,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
   Widget build(BuildContext context) {
     final appProvider = Provider.of<AppProvider>(context);
     final loc = AppLocalizations.of(context);
+    final isAr = appProvider.isArabic;
+    final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: AppColors.nileTeal,
@@ -81,19 +84,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         fit: StackFit.expand,
         children: [
           // Dynamic Pharaonic / Egyptian Destination Background Image
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 600),
-            switchInCurve: Curves.easeInOut,
-            switchOutCurve: Curves.easeInOut,
-            child: SafeNetworkImage(
-              key: ValueKey(_getBackgroundForStyle()),
-              imageUrl: _getBackgroundForStyle(),
-              fit: BoxFit.cover,
+          Positioned.fill(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 600),
+              switchInCurve: Curves.easeInOut,
+              switchOutCurve: Curves.easeInOut,
+              child: SizedBox(
+                width: screenSize.width,
+                height: screenSize.height,
+                child: SafeNetworkImage(
+                  key: ValueKey(_getBackgroundForStyle()),
+                  imageUrl: _getBackgroundForStyle(),
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                ),
+              ),
             ),
           ),
 
           // Nile Teal & Terracotta Sunset Ambient Gradient Overlay
           Container(
+            width: screenSize.width,
+            height: screenSize.height,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -173,7 +185,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                                   switchOutCurve: Curves.easeInCubic,
                                   child: _step == 0
                                       ? _buildWelcomeStep0(loc, appProvider)
-                                      : _buildQuizStep1(loc, appProvider),
+                                      : _buildQuizStep1(loc, appProvider, isAr),
                                 ),
                               ],
                             ),
@@ -281,7 +293,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
     );
   }
 
-  Widget _buildQuizStep1(AppLocalizations loc, AppProvider appProvider) {
+  Widget _buildQuizStep1(AppLocalizations loc, AppProvider appProvider, bool isAr) {
     return Column(
       key: const ValueKey(1),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -299,7 +311,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
           loc.translate('quizSubtitle'),
           style: const TextStyle(fontSize: 14, color: AppColors.desertSand),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
+
+        // Free Trip Days Selector
+        Text(
+          isAr ? 'كم عدد الأيام المتاحة لرحلتك؟' : 'How many free days for your trip?',
+          style: const TextStyle(fontSize: 16, color: AppColors.papyrusGold, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 10,
+          children: [2, 3, 5, 7, 10].map((days) {
+            final labelText = '$days ${isAr ? 'أيام' : 'Days'}';
+            return _buildCustomChip(
+              label: labelText,
+              isSelected: _selectedDaysCount == days,
+              onTap: () => setState(() => _selectedDaysCount = days),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 20),
 
         // Style Selector
         Text(
@@ -323,7 +355,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
             );
           }).toList(),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
 
         // Budget Selector
         Text(
@@ -342,10 +374,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
             );
           }).toList(),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 28),
 
         ElevatedButton(
-          onPressed: () => _handleCreateCustomizedTrip(appProvider, loc),
+          onPressed: () => _showTravelersSelectionModal(context, appProvider, loc),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.papyrusGold,
             foregroundColor: AppColors.nileTeal,
@@ -376,14 +408,115 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
     );
   }
 
-  void _handleCreateCustomizedTrip(AppProvider appProvider, AppLocalizations loc) {
+  void _showTravelersSelectionModal(BuildContext context, AppProvider appProvider, AppLocalizations loc) {
+    int tempTravelers = 2; // Default 2 travelers
+    final isAr = appProvider.isArabic;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.borderLight,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  Row(
+                    children: [
+                      const Icon(Icons.people_alt_rounded, color: AppColors.terracotta, size: 28),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          isAr ? 'كم عدد المسافرين في هذه الرحلة؟' : 'How many travelers are joining?',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.nileTeal),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    isAr ? 'اختر عدد الأشخاص لحساب التكاليف وتجهيز التذاكر بإنسب سعر.' : 'Choose the number of travelers to calculate total entry fees and arrangements.',
+                    style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Traveler Count Selection Chips
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      1, 2, 3, 4, 5, 6
+                    ].map((count) {
+                      final isSel = tempTravelers == count;
+                      final label = count == 1
+                          ? (isAr ? '1 مسافر منفرد' : '1 Solo')
+                          : count == 2
+                              ? (isAr ? '2 مسافران (زوجين)' : '2 Pair / Couple')
+                              : '$count ${isAr ? 'مسافرين' : 'Travelers'}';
+
+                      return ChoiceChip(
+                        label: Text(label),
+                        selected: isSel,
+                        selectedColor: AppColors.papyrusGold,
+                        labelStyle: TextStyle(
+                          color: isSel ? AppColors.nileTeal : AppColors.charcoal,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                        onSelected: (_) => setModalState(() => tempTravelers = count),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 28),
+
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context); // Close modal
+                      _generateTripWithParams(appProvider, loc, tempTravelers);
+                    },
+                    icon: const Icon(Icons.check_circle_outline_rounded),
+                    label: Text(isAr ? 'تأكيد وإنشاء الرحلة المنهندلة' : 'Confirm & Generate Handled Trip'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(52),
+                      backgroundColor: AppColors.nileTeal,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _generateTripWithParams(AppProvider appProvider, AppLocalizations loc, int travelerCount) {
     final profile = appProvider.userProfile.copyWith(
       travelStyle: _selectedStyle,
       budgetTier: _selectedBudget,
     );
     appProvider.setUserProfile(profile);
 
-    // Map user's chosen style to target destination & attractions
     String destinationId = 'cairo';
     List<String> attractionIds = [];
 
@@ -418,8 +551,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
       destinationId: destinationId,
       attractionIds: attractionIds,
       startDate: DateTime.now().add(const Duration(days: 7)),
-      daysCount: 3,
-      travelerCount: 2,
+      daysCount: _selectedDaysCount, // Use selected free days
+      travelerCount: travelerCount,   // Use selected travelers count from popup menu!
     );
 
     appProvider.addTrip(trip);

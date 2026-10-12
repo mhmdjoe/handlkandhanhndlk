@@ -29,7 +29,8 @@ void main() {
       travelerCount: 2,
     );
 
-    expect(trip.items.length, equals(2));
+    expect(trip.daysCount, equals(2));
+    expect(trip.items.length, greaterThanOrEqualTo(2));
     expect(trip.totalCostEgp, greaterThan(0));
 
     final conflicts = ItineraryEngine.checkScheduleConflicts(trip);

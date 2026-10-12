@@ -38,7 +38,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
     final isAr = provider.isArabic;
 
     final conflicts = ItineraryEngine.checkScheduleConflicts(_currentTrip);
-    final maxDay = _currentTrip.items.fold<int>(1, (max, item) => item.dayNumber > max ? item.dayNumber : max);
+    final totalDays = _currentTrip.daysCount;
 
     final destination = TourismDatabase.destinations.firstWhere(
       (d) => d.id == _currentTrip.destinationId,
@@ -58,8 +58,8 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
         : (matchingHotels.isNotEmpty ? matchingHotels.first : TourismDatabase.hotels.first);
 
     // Calculate total cost including hotel stay
-    final hotelTotalEgp = selectedHotel.pricePerNightEgp * maxDay;
-    final hotelTotalUsd = selectedHotel.pricePerNightUsd * maxDay;
+    final hotelTotalEgp = selectedHotel.pricePerNightEgp * totalDays;
+    final hotelTotalUsd = selectedHotel.pricePerNightUsd * totalDays;
     final grandTotalEgp = _currentTrip.totalCostEgp + hotelTotalEgp;
     final grandTotalUsd = _currentTrip.totalCostUsd + hotelTotalUsd;
 
@@ -143,7 +143,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
               children: [
                 Expanded(
                   child: ChoiceChip(
-                    label: Center(child: Text(isAr ? 'الرحلة بالكامل ($maxDay أيام)' : 'Whole Trip ($maxDay Days)')),
+                    label: Center(child: Text(isAr ? 'الرحلة بالكامل ($totalDays أيام)' : 'Whole Trip ($totalDays Days)')),
                     selected: _isWholeTripView,
                     selectedColor: AppColors.nileTeal,
                     labelStyle: TextStyle(
@@ -177,7 +177,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: maxDay,
+                itemCount: totalDays,
                 itemBuilder: (context, index) {
                   final dayNum = index + 1;
                   final isSel = _selectedDay == dayNum;
@@ -197,7 +197,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
           // Content List View
           Expanded(
             child: _isWholeTripView
-                ? _buildWholeTripListView(context, provider, isAr, maxDay, destination, selectedHotel, maxDay)
+                ? _buildWholeTripListView(context, provider, isAr, totalDays, destination, selectedHotel, totalDays)
                 : _buildDayItemsListView(context, provider, isAr, _selectedDay),
           ),
         ],
@@ -209,7 +209,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
     BuildContext context,
     AppProvider provider,
     bool isAr,
-    int maxDay,
+    int totalDays,
     Destination dest,
     Hotel selectedHotel,
     int tripDays,
@@ -329,7 +329,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
         ),
 
         // Daily Master Schedule Items
-        ...List.generate(maxDay, (dIdx) {
+        ...List.generate(totalDays, (dIdx) {
           final dayNum = dIdx + 1;
           final dayItems = _currentTrip.items.where((i) => i.dayNumber == dayNum).toList();
 

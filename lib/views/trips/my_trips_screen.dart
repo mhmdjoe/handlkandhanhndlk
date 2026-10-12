@@ -47,7 +47,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
       ),
       body: Column(
         children: [
-          // Status Filter Chips
+          // Status Filter Chips with Crisp White Selected Text
           if (allTrips.isNotEmpty)
             SizedBox(
               height: 48,
@@ -56,20 +56,50 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 children: [
                   ChoiceChip(
-                    label: Text(isAr ? 'جميع الرحلات (${allTrips.length})' : 'All Trips (${allTrips.length})'),
+                    label: Text(
+                      isAr ? 'جميع الرحلات (${allTrips.length})' : 'All Trips (${allTrips.length})',
+                      style: TextStyle(
+                        color: _selectedStatusFilter == 'All' ? Colors.white : AppColors.charcoal,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
                     selected: _selectedStatusFilter == 'All',
+                    selectedColor: AppColors.nileTeal,
+                    backgroundColor: AppColors.desertSand,
+                    checkmarkColor: Colors.white,
                     onSelected: (_) => setState(() => _selectedStatusFilter = 'All'),
                   ),
                   const SizedBox(width: 8),
                   ChoiceChip(
-                    label: Text(isAr ? 'رحلات قائمة' : 'Active Journeys'),
+                    label: Text(
+                      isAr ? 'رحلات قائمة' : 'Active Journeys',
+                      style: TextStyle(
+                        color: _selectedStatusFilter == 'Active Journey' ? Colors.white : AppColors.charcoal,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
                     selected: _selectedStatusFilter == 'Active Journey',
+                    selectedColor: AppColors.nileTeal,
+                    backgroundColor: AppColors.desertSand,
+                    checkmarkColor: Colors.white,
                     onSelected: (_) => setState(() => _selectedStatusFilter = 'Active Journey'),
                   ),
                   const SizedBox(width: 8),
                   ChoiceChip(
-                    label: Text(loc.translate('statusConfirmed')),
+                    label: Text(
+                      loc.translate('statusConfirmed'),
+                      style: TextStyle(
+                        color: _selectedStatusFilter == 'Confirmed' ? Colors.white : AppColors.charcoal,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
                     selected: _selectedStatusFilter == 'Confirmed',
+                    selectedColor: AppColors.nileTeal,
+                    backgroundColor: AppColors.desertSand,
+                    checkmarkColor: Colors.white,
                     onSelected: (_) => setState(() => _selectedStatusFilter = 'Confirmed'),
                   ),
                 ],
@@ -117,8 +147,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                         orElse: () => TourismDatabase.destinations.first,
                       );
 
-                      // Group trip items by day
-                      final maxDay = trip.items.fold<int>(1, (max, item) => item.dayNumber > max ? item.dayNumber : max);
+                      final totalDays = trip.daysCount;
 
                       return Card(
                         margin: const EdgeInsets.only(bottom: 20),
@@ -196,7 +225,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                                       _metricCell(
                                         icon: Icons.calendar_today_rounded,
                                         label: isAr ? 'مدة الرحلة' : 'Duration',
-                                        value: '$maxDay ${isAr ? 'أيام' : 'Days'}',
+                                        value: '$totalDays ${isAr ? 'أيام' : 'Days'}',
                                       ),
                                       _metricCell(
                                         icon: Icons.people_outline_rounded,
@@ -214,7 +243,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                                   ),
                                   const SizedBox(height: 8),
 
-                                  ...List.generate(maxDay > 3 ? 3 : maxDay, (dIdx) {
+                                  ...List.generate(totalDays > 3 ? 3 : totalDays, (dIdx) {
                                     final dayNum = dIdx + 1;
                                     final dayItems = trip.items.where((i) => i.dayNumber == dayNum).toList();
                                     final names = dayItems.map((i) {
@@ -244,7 +273,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
-                                              names.isEmpty ? (isAr ? 'يوم حر للاستجمام' : 'Free leisure day') : names,
+                                              names.isEmpty ? (isAr ? 'يوم حر للاستجمام والتجول' : 'Free leisure day') : names,
                                               style: const TextStyle(fontSize: 12, color: AppColors.charcoal),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
@@ -255,9 +284,9 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                                     );
                                   }),
 
-                                  if (maxDay > 3)
+                                  if (totalDays > 3)
                                     Text(
-                                      isAr ? '+ ${maxDay - 3} أيام إضافية في الرحلة' : '+ ${maxDay - 3} more days in whole trip...',
+                                      isAr ? '+ ${totalDays - 3} أيام إضافية في الرحلة' : '+ ${totalDays - 3} more days in whole trip...',
                                       style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontStyle: FontStyle.italic),
                                     ),
 

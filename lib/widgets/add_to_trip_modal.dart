@@ -285,6 +285,7 @@ class _AddToTripModalState extends State<AddToTripModal> {
         destinationId: active.destinationId,
         startDate: active.startDate,
         endDate: active.endDate,
+        daysCount: active.daysCount,
         items: [...active.items, newItem],
         totalCostEgp: active.totalCostEgp + a.priceEgp,
         totalCostUsd: active.totalCostUsd + a.priceUsd,

@@ -49,7 +49,7 @@ class ExploreScreen extends StatelessWidget {
             ),
           ),
 
-          // Horizontal Governorates Filter Chips
+          // Horizontal Governorates Filter Chips with Crisp White Selected Text
           SizedBox(
             height: 48,
             child: ListView(
@@ -57,16 +57,37 @@ class ExploreScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 ChoiceChip(
-                  label: Text(loc.translate('allGovernorates')),
+                  label: Text(
+                    loc.translate('allGovernorates'),
+                    style: TextStyle(
+                      color: appProvider.selectedDestinationId == 'all' ? Colors.white : AppColors.charcoal,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
                   selected: appProvider.selectedDestinationId == 'all',
+                  selectedColor: AppColors.nileTeal,
+                  backgroundColor: AppColors.desertSand,
+                  checkmarkColor: Colors.white,
                   onSelected: (sel) => appProvider.setDestinationFilter('all'),
                 ),
                 ...TourismDatabase.destinations.map((d) {
+                  final isSel = appProvider.selectedDestinationId == d.id;
                   return Padding(
                     padding: const EdgeInsets.only(left: 8),
                     child: ChoiceChip(
-                      label: Text(isAr ? d.nameAr : d.nameEn),
-                      selected: appProvider.selectedDestinationId == d.id,
+                      label: Text(
+                        isAr ? d.nameAr : d.nameEn,
+                        style: TextStyle(
+                          color: isSel ? Colors.white : AppColors.charcoal,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      selected: isSel,
+                      selectedColor: AppColors.nileTeal,
+                      backgroundColor: AppColors.desertSand,
+                      checkmarkColor: Colors.white,
                       onSelected: (sel) => appProvider.setDestinationFilter(d.id),
                     ),
                   );

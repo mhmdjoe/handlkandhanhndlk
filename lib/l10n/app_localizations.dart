@@ -47,7 +47,7 @@ class AppLocalizations {
       'popularExperiences': 'Must-Try Experiences',
       'seasonalPicks': 'Seasonal Picks for You',
       'viewAll': 'View All',
-      'startPlanning': 'Start Smart Itinerary',
+      'startPlanning': 'Try Your First Handled Trip',
       'exploreCategory': 'Explore Categories',
       'activeTrip': 'Active Trip',
       
@@ -152,7 +152,7 @@ class AppLocalizations {
       'popularExperiences': 'تجارب لا تُفوت',
       'seasonalPicks': 'ترشيحات الموسم لك',
       'viewAll': 'عرض الكل',
-      'startPlanning': 'ابدأ تخطيط الرحلة',
+      'startPlanning': 'جرب رحلتك المنهندلة الأولى',
       'exploreCategory': 'استكشف حسب التصنيف',
       'activeTrip': 'الرحلة الحالية',
       

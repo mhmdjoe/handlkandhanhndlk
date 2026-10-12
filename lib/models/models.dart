@@ -317,6 +317,7 @@ class Trip {
   final String destinationId;
   final DateTime startDate;
   final DateTime endDate;
+  final int daysCount;
   final List<ItineraryItem> items;
   final double totalCostEgp;
   final double totalCostUsd;
@@ -331,6 +332,7 @@ class Trip {
     required this.destinationId,
     required this.startDate,
     required this.endDate,
+    required this.daysCount,
     required this.items,
     required this.totalCostEgp,
     required this.totalCostUsd,
@@ -346,6 +348,7 @@ class Trip {
     'destinationId': destinationId,
     'startDate': startDate.toIso8601String(),
     'endDate': endDate.toIso8601String(),
+    'daysCount': daysCount,
     'items': items.map((i) => i.toJson()).toList(),
     'totalCostEgp': totalCostEgp,
     'totalCostUsd': totalCostUsd,
@@ -361,6 +364,7 @@ class Trip {
     destinationId: json['destinationId'],
     startDate: DateTime.parse(json['startDate']),
     endDate: DateTime.parse(json['endDate']),
+    daysCount: json['daysCount'] ?? 3,
     items: (json['items'] as List).map((i) => ItineraryItem.fromJson(i)).toList(),
     totalCostEgp: (json['totalCostEgp'] as num).toDouble(),
     totalCostUsd: (json['totalCostUsd'] as num).toDouble(),
