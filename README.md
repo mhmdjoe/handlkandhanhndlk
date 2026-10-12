@@ -8,6 +8,16 @@
   <img src="https://img.shields.io/badge/Design-Apple%20HIG%20Glassmorphism-C85A32?style=for-the-badge" alt="Design" />
 </p>
 
+<p align="center">
+  <a href="https://mhmdjoe.github.io/handlkandhanhndlk/">
+    <img src="https://img.shields.io/badge/🌐%20Live%20Web%20App-Experience%20Instantly%20in%20Browser-00A896?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Live Web App" />
+  </a>
+</p>
+
+<h3 align="center">
+  👉 🌐 <a href="https://mhmdjoe.github.io/handlkandhanhndlk/">Experience Platform Live in Web Browser (Explore instantly in your web browser!)</a>
+</h3>
+
 > **"You choose the experience. We plan the journey."**
 > **"أنت اختار التجربة، وإحنا نهندلك الرحلة."**
 
@@ -119,8 +129,8 @@ lib/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/mhmdjoe/-hndlkandhnhndlk.git
-   cd -hndlkandhnhndlk
+   git clone https://github.com/mhmdjoe/handlkandhanhndlk.git
+   cd handlkandhanhndlk
    ```
 
 2. **Install dependencies:**
