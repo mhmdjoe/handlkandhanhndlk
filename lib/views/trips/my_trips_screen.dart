@@ -47,7 +47,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
       ),
       body: Column(
         children: [
-          // Status Filter Chips with Crisp White Selected Text
+          // Status Filter Chips with Sunset Orange Selection
           if (allTrips.isNotEmpty)
             SizedBox(
               height: 48,
@@ -65,7 +65,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                       ),
                     ),
                     selected: _selectedStatusFilter == 'All',
-                    selectedColor: AppColors.primaryPurple,
+                    selectedColor: AppColors.primaryOrange, // Sunset Orange #FF5008
                     backgroundColor: AppColors.lightPurple,
                     checkmarkColor: Colors.white,
                     onSelected: (_) => setState(() => _selectedStatusFilter = 'All'),
@@ -81,7 +81,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                       ),
                     ),
                     selected: _selectedStatusFilter == 'Active Journey',
-                    selectedColor: AppColors.primaryPurple,
+                    selectedColor: AppColors.primaryOrange, // Sunset Orange #FF5008
                     backgroundColor: AppColors.lightPurple,
                     checkmarkColor: Colors.white,
                     onSelected: (_) => setState(() => _selectedStatusFilter = 'Active Journey'),
@@ -97,7 +97,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                       ),
                     ),
                     selected: _selectedStatusFilter == 'Confirmed',
-                    selectedColor: AppColors.primaryPurple,
+                    selectedColor: AppColors.primaryOrange, // Sunset Orange #FF5008
                     backgroundColor: AppColors.lightPurple,
                     checkmarkColor: Colors.white,
                     onSelected: (_) => setState(() => _selectedStatusFilter = 'Confirmed'),

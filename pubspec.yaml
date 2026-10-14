@@ -61,7 +61,8 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/logo.png
+    - assets/images/handelak_logo.png
+    - assets/images/handelak_mark.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

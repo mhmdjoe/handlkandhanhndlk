@@ -63,8 +63,8 @@ class HomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Image.asset(
-                          'assets/images/logo.png',
-                          height: 58,
+                          'assets/images/handelak_logo.png',
+                          height: 60,
                           fit: BoxFit.contain,
                           filterQuality: FilterQuality.high,
                           errorBuilder: (_, _, _) => const SizedBox.shrink(),
@@ -260,18 +260,21 @@ class HomeScreen extends StatelessWidget {
                     spacing: 8,
                     runSpacing: 8,
                     children: CategoryType.values.take(6).map((cat) {
+                      final isSel = appProvider.selectedCategory == cat;
                       return ChoiceChip(
                         label: Text(isAr ? cat.nameAr : cat.nameEn),
-                        selected: appProvider.selectedCategory == cat,
+                        selected: isSel,
                         onSelected: (sel) {
                           appProvider.setCategoryFilter(sel ? cat : null);
                           onExploreTap();
                         },
-                        selectedColor: AppColors.nileTeal,
+                        selectedColor: AppColors.primaryOrange, // Sunset Orange #FF5008
+                        backgroundColor: AppColors.lightPurple,
+                        checkmarkColor: Colors.white,
                         labelStyle: TextStyle(
-                          color: appProvider.selectedCategory == cat ? Colors.white : AppColors.charcoal,
+                          color: isSel ? Colors.white : AppColors.charcoal,
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                         ),
                       );
                     }).toList(),
@@ -439,7 +442,7 @@ class HomeScreen extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           provider.formatPrice(a.priceEgp, a.priceUsd),
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.nileTeal, fontSize: 14),
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryOrange, fontSize: 15),
                         ),
                       ],
                     ),

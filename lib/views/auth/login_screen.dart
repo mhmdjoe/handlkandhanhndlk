@@ -68,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               // Official Transparent Logo Asset
               Image.asset(
-                'assets/images/logo.png',
+                'assets/images/handelak_logo.png',
                 height: 90,
                 fit: BoxFit.contain,
                 errorBuilder: (_, _, _) => const Icon(

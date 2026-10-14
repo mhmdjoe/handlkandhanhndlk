@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'providers/app_provider.dart';
 import 'theme/app_theme.dart';
 import 'l10n/app_localizations.dart';
+import 'views/splash/splash_screen.dart';
 import 'views/onboarding/onboarding_screen.dart';
 
 void main() {
@@ -35,7 +36,9 @@ class HandelakApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            home: const OnboardingScreen(),
+            home: const HandelakSplash(
+              welcome: OnboardingScreen(),
+            ),
           );
         },
       ),

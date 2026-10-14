@@ -21,7 +21,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
+  late ScrollController _scrollController;
 
+  bool _showHeaderLogo = false;
   int _step = 0; // 0: Welcome & Lang, 1: Quiz
   String _selectedStyle = 'History & Culture';
   String _selectedBudget = 'Moderate';
@@ -30,6 +32,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      if (_scrollController.offset > 80 && !_showHeaderLogo) {
+        setState(() => _showHeaderLogo = true);
+      } else if (_scrollController.offset <= 80 && _showHeaderLogo) {
+        setState(() => _showHeaderLogo = false);
+      }
+    });
+
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -53,6 +64,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _animController.dispose();
     super.dispose();
   }
@@ -130,26 +142,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       return SingleChildScrollView(
+                        controller: _scrollController,
                         child: ConstrainedBox(
                           constraints: BoxConstraints(minHeight: constraints.maxHeight),
                           child: IntrinsicHeight(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                // Top Header Bar with Official Logo & Language Switcher
+                                // Top Header Bar with Logo Without Text (Symbol Mark) & Language Switcher
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Row(
-                                      children: [
-                                        Image.asset(
-                                          'assets/images/logo.png',
-                                          height: 52,
-                                          fit: BoxFit.contain,
-                                          filterQuality: FilterQuality.high,
-                                          errorBuilder: (_, _, _) => const Icon(Icons.auto_awesome_rounded, color: AppColors.papyrusGold, size: 28),
-                                        ),
-                                      ],
+                                    Image.asset(
+                                      'assets/images/handelak_mark.png',
+                                      height: 48,
+                                      fit: BoxFit.contain,
+                                      filterQuality: FilterQuality.high,
+                                      errorBuilder: (_, _, _) => const Icon(Icons.auto_awesome_rounded, color: AppColors.papyrusGold, size: 28),
                                     ),
                                     GlassContainer(
                                       blurSigma: 10,
@@ -204,7 +213,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
       key: const ValueKey(0),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Welcome Card with Official Transparent Logo
+        // Welcome Card with Full Official Transparent Logo above Welcome to Egypt
         GlassContainer(
           blurSigma: 15,
           tintColor: Colors.black.withValues(alpha: 0.35),
@@ -213,8 +222,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
           child: Column(
             children: [
               Image.asset(
-                'assets/images/logo.png',
-                height: 72,
+                'assets/images/handelak_logo.png',
+                height: 100,
                 fit: BoxFit.contain,
                 filterQuality: FilterQuality.high,
                 errorBuilder: (_, _, _) => Container(
@@ -266,7 +275,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
           title: loc.translate('hnhndlkTitle'),
           subtitle: loc.translate('hnhndlkSubtitle'),
           icon: Icons.auto_awesome_rounded,
-          color: AppColors.primaryOrange,
+          color: AppColors.terracotta,
         ),
         const SizedBox(height: 28),
 

@@ -91,7 +91,7 @@ class _NavigationShellState extends State<NavigationShell> {
               borderRadius: BorderRadius.circular(36),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.nileTeal.withValues(alpha: 0.25),
+                  color: AppColors.primaryPurple.withValues(alpha: 0.25),
                   blurRadius: 24,
                   spreadRadius: 2,
                   offset: const Offset(0, 10),
@@ -109,7 +109,7 @@ class _NavigationShellState extends State<NavigationShell> {
                 filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.nileTeal.withValues(alpha: 0.85),
+                    color: AppColors.primaryPurple.withValues(alpha: 0.88),
                     borderRadius: BorderRadius.circular(36),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.25),
@@ -135,14 +135,16 @@ class _NavigationShellState extends State<NavigationShell> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: isSelected
-                                ? (item.isSpecial
-                                    ? AppColors.terracotta
-                                    : AppColors.papyrusGold.withValues(alpha: 0.22))
-                                : Colors.transparent,
+                            color: isSelected ? AppColors.primaryOrange : Colors.transparent, // All active tabs highlight in vibrant Handelak Orange (#FF5008)
                             borderRadius: BorderRadius.circular(24),
-                            border: isSelected && !item.isSpecial
-                                ? Border.all(color: AppColors.papyrusGold.withValues(alpha: 0.6))
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: AppColors.primaryOrange.withValues(alpha: 0.40),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ]
                                 : null,
                           ),
                           child: Row(
@@ -154,10 +156,8 @@ class _NavigationShellState extends State<NavigationShell> {
                                 curve: Curves.easeOutBack,
                                 child: Icon(
                                   isSelected ? item.activeIcon : item.icon,
-                                  color: isSelected
-                                      ? (item.isSpecial ? Colors.white : AppColors.papyrusGold)
-                                      : Colors.white70,
-                                  size: item.isSpecial ? 24 : 22,
+                                  color: isSelected ? Colors.white : Colors.white70,
+                                  size: 22,
                                 ),
                               ),
                               if (isSelected) ...[
@@ -167,10 +167,8 @@ class _NavigationShellState extends State<NavigationShell> {
                                   opacity: isSelected ? 1.0 : 0.0,
                                   child: Text(
                                     loc.translate(item.labelKey),
-                                    style: TextStyle(
-                                      color: isSelected
-                                          ? (item.isSpecial ? Colors.white : AppColors.papyrusGold)
-                                          : Colors.white,
+                                    style: const TextStyle(
+                                      color: Colors.white, // Crisp white text on active orange shape
                                       fontWeight: FontWeight.bold,
                                       fontSize: 13,
                                     ),

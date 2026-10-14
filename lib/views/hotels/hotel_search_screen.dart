@@ -131,7 +131,7 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                                   children: [
                                     Text(
                                       provider.formatPrice(hotel.pricePerNightEgp, hotel.pricePerNightUsd),
-                                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.nileTeal),
+                                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryOrange),
                                     ),
                                     Text(
                                       loc.translate('perNight'),

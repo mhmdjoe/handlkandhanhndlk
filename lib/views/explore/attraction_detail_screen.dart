@@ -109,6 +109,7 @@ class AttractionDetailScreen extends StatelessWidget {
                           icon: Icons.confirmation_number_outlined,
                           label: loc.translate('entranceFee'),
                           value: provider.formatPrice(attraction.priceEgp, attraction.priceUsd),
+                          isPrice: true,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -217,7 +218,7 @@ class AttractionDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _infoCard({required IconData icon, required String label, required String value}) {
+  Widget _infoCard({required IconData icon, required String label, required String value, bool isPrice = false}) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -227,15 +228,22 @@ class AttractionDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.nileTeal, size: 24),
+          Icon(icon, color: isPrice ? AppColors.primaryOrange : AppColors.primaryPurple, size: 24),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                Text(label, style: const TextStyle(fontSize: 11, color: AppColors.mediumGray)),
                 const SizedBox(height: 2),
-                Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: isPrice ? AppColors.primaryOrange : AppColors.darkGray,
+                  ),
+                ),
               ],
             ),
           ),

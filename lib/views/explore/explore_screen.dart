@@ -24,7 +24,7 @@ class ExploreScreen extends StatelessWidget {
         title: Text(loc.translate('exploreEgypt')),
         actions: [
           IconButton(
-            icon: const Icon(Icons.filter_list),
+            icon: const Icon(Icons.filter_list, color: AppColors.primaryPurple),
             onPressed: () => _showFilterSheet(context, appProvider, loc, isAr),
           ),
         ],
@@ -38,7 +38,7 @@ class ExploreScreen extends StatelessWidget {
               onChanged: (val) => appProvider.setSearchQuery(val),
               decoration: InputDecoration(
                 hintText: loc.translate('searchHint'),
-                prefixIcon: const Icon(Icons.search, color: AppColors.nileTeal),
+                prefixIcon: const Icon(Icons.search, color: AppColors.primaryPurple),
                 suffixIcon: appProvider.searchQuery.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear),
@@ -49,7 +49,7 @@ class ExploreScreen extends StatelessWidget {
             ),
           ),
 
-          // Horizontal Governorates Filter Chips with Crisp White Selected Text
+          // Horizontal Governorates Filter Chips with Sunset Orange Selection
           SizedBox(
             height: 48,
             child: ListView(
@@ -66,8 +66,8 @@ class ExploreScreen extends StatelessWidget {
                     ),
                   ),
                   selected: appProvider.selectedDestinationId == 'all',
-                  selectedColor: AppColors.nileTeal,
-                  backgroundColor: AppColors.desertSand,
+                  selectedColor: AppColors.primaryOrange, // Sunset Orange #FF5008
+                  backgroundColor: AppColors.lightPurple,
                   checkmarkColor: Colors.white,
                   onSelected: (sel) => appProvider.setDestinationFilter('all'),
                 ),
@@ -85,8 +85,8 @@ class ExploreScreen extends StatelessWidget {
                         ),
                       ),
                       selected: isSel,
-                      selectedColor: AppColors.nileTeal,
-                      backgroundColor: AppColors.desertSand,
+                      selectedColor: AppColors.primaryOrange, // Sunset Orange #FF5008
+                      backgroundColor: AppColors.lightPurple,
                       checkmarkColor: Colors.white,
                       onSelected: (sel) => appProvider.setDestinationFilter(d.id),
                     ),
@@ -106,7 +106,7 @@ class ExploreScreen extends StatelessWidget {
                 Expanded(
                   child: Text(
                     '${filtered.length} ${loc.translate('resultsFound')}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textMuted),
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.mediumGray),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -117,7 +117,7 @@ class ExploreScreen extends StatelessWidget {
                     appProvider.filterAccessibleOnly)
                   TextButton(
                     onPressed: () => appProvider.resetFilters(),
-                    child: const Text('Reset Filters'),
+                    child: const Text('Reset Filters', style: TextStyle(color: AppColors.primaryOrange, fontWeight: FontWeight.bold)),
                   ),
               ],
             ),
@@ -130,11 +130,11 @@ class ExploreScreen extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.search_off, size: 64, color: AppColors.textMuted),
+                        const Icon(Icons.search_off, size: 64, color: AppColors.mediumGray),
                         const SizedBox(height: 12),
                         Text(
                           isAr ? 'لم نجد أماكن تطابق البحث' : 'No places found matching your filters.',
-                          style: const TextStyle(color: AppColors.textMuted, fontSize: 16),
+                          style: const TextStyle(color: AppColors.mediumGray, fontSize: 16),
                         ),
                       ],
                     ),
@@ -180,7 +180,7 @@ class ExploreScreen extends StatelessWidget {
                                       child: IconButton(
                                         icon: Icon(
                                           isFav ? Icons.favorite : Icons.favorite_border,
-                                          color: isFav ? Colors.red : AppColors.textMuted,
+                                          color: isFav ? Colors.red : AppColors.mediumGray,
                                         ),
                                         onPressed: () => appProvider.toggleFavorite(a.id),
                                       ),
@@ -192,7 +192,7 @@ class ExploreScreen extends StatelessWidget {
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                       decoration: BoxDecoration(
-                                        color: AppColors.nileTeal.withValues(alpha: 0.9),
+                                        color: AppColors.primaryOrange.withValues(alpha: 0.95), // Sunset Orange Badge
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Text(
@@ -214,13 +214,13 @@ class ExploreScreen extends StatelessWidget {
                                         Expanded(
                                           child: Text(
                                             isAr ? a.nameAr : a.nameEn,
-                                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.darkGray),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                         IconButton(
-                                          icon: const Icon(Icons.add_circle, color: AppColors.terracotta, size: 28),
+                                          icon: const Icon(Icons.add_circle, color: AppColors.primaryOrange, size: 28),
                                           onPressed: () => AddToTripModal.show(context, a),
                                         ),
                                       ],
@@ -230,18 +230,18 @@ class ExploreScreen extends StatelessWidget {
                                       isAr ? a.descriptionAr : a.descriptionEn,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                                      style: const TextStyle(color: AppColors.mediumGray, fontSize: 13),
                                     ),
                                     const SizedBox(height: 12),
                                     Row(
                                       children: [
-                                        const Icon(Icons.access_time, size: 16, color: AppColors.textMuted),
+                                        const Icon(Icons.access_time, size: 16, color: AppColors.mediumGray),
                                         const SizedBox(width: 4),
-                                        Text('${a.openingTime} - ${a.closingTime}', style: const TextStyle(fontSize: 12)),
+                                        Text('${a.openingTime} - ${a.closingTime}', style: const TextStyle(fontSize: 12, color: AppColors.darkGray)),
                                         const Spacer(),
                                         Text(
                                           appProvider.formatPrice(a.priceEgp, a.priceUsd),
-                                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.nileTeal),
+                                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryOrange),
                                         ),
                                       ],
                                     ),
@@ -275,7 +275,39 @@ class ExploreScreen extends StatelessWidget {
                 children: [
                   Text(
                     loc.translate('filterTitle'),
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryPurple),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Category Selector Chips
+                  Text(
+                    loc.translate('exploreCategory'),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.darkGray),
+                  ),
+                  const SizedBox(height: 8),
+
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: CategoryType.values.map((cat) {
+                      final isSel = provider.selectedCategory == cat;
+                      return ChoiceChip(
+                        label: Text(isAr ? cat.nameAr : cat.nameEn),
+                        selected: isSel,
+                        selectedColor: AppColors.primaryOrange, // Sunset Orange #FF5008
+                        backgroundColor: AppColors.lightPurple,
+                        checkmarkColor: Colors.white,
+                        labelStyle: TextStyle(
+                          color: isSel ? Colors.white : AppColors.charcoal,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        onSelected: (sel) {
+                          provider.setCategoryFilter(sel ? cat : null);
+                          setState(() {});
+                        },
+                      );
+                    }).toList(),
                   ),
                   const SizedBox(height: 16),
 
@@ -299,6 +331,10 @@ class ExploreScreen extends StatelessWidget {
 
                   ElevatedButton(
                     onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                      backgroundColor: AppColors.primaryPurple,
+                    ),
                     child: const Center(child: Text('Apply Filters')),
                   ),
                 ],
