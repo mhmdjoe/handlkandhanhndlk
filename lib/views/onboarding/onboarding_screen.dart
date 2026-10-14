@@ -266,7 +266,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
           title: loc.translate('hnhndlkTitle'),
           subtitle: loc.translate('hnhndlkSubtitle'),
           icon: Icons.auto_awesome_rounded,
-          color: AppColors.terracotta,
+          color: AppColors.primaryOrange,
         ),
         const SizedBox(height: 28),
 
@@ -305,7 +305,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.lightPurple, // Purple Title #EDE5FF
           ),
         ),
         const SizedBox(height: 8),
@@ -315,10 +315,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         ),
         const SizedBox(height: 20),
 
-        // Free Trip Days Selector
+        // Free Trip Days Question Heading in Purple (#EDE5FF)
         Text(
           isAr ? 'كم عدد الأيام المتاحة لرحلتك؟' : 'How many free days for your trip?',
-          style: const TextStyle(fontSize: 16, color: AppColors.papyrusGold, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 16, color: AppColors.lightPurple, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
         Wrap(
@@ -335,10 +335,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         ),
         const SizedBox(height: 20),
 
-        // Style Selector
+        // Style Selector Question Heading in Purple (#EDE5FF)
         Text(
           loc.translate('travelStyle'),
-          style: const TextStyle(fontSize: 16, color: AppColors.papyrusGold, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 16, color: AppColors.lightPurple, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
         Wrap(
@@ -359,10 +359,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         ),
         const SizedBox(height: 20),
 
-        // Budget Selector
+        // Budget Selector Question Heading in Purple (#EDE5FF)
         Text(
           loc.translate('budgetTier'),
-          style: const TextStyle(fontSize: 16, color: AppColors.papyrusGold, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 16, color: AppColors.lightPurple, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
         Wrap(
@@ -378,13 +378,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         ),
         const SizedBox(height: 28),
 
+        // Action Button in Primary Purple (#4300C8)
         ElevatedButton(
           onPressed: () => _showTravelersSelectionModal(context, appProvider, loc),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryOrange,
+            backgroundColor: AppColors.primaryPurple, // Deep Purple #4300C8
             foregroundColor: Colors.white,
             elevation: 4,
-            shadowColor: AppColors.primaryOrange.withValues(alpha: 0.4),
+            shadowColor: AppColors.primaryPurple.withValues(alpha: 0.4),
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
@@ -445,12 +446,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
 
                   Row(
                     children: [
-                      const Icon(Icons.people_alt_rounded, color: AppColors.terracotta, size: 28),
+                      const Icon(Icons.people_alt_rounded, color: AppColors.primaryPurple, size: 28),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           isAr ? 'كم عدد المسافرين في هذه الرحلة؟' : 'How many travelers are joining?',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.nileTeal),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primaryPurple),
                         ),
                       ),
                     ],
@@ -462,7 +463,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                   ),
                   const SizedBox(height: 20),
 
-                  // Traveler Count Selection Chips
+                  // Traveler Count Selection Chips in Vibrant Orange (#FF5008)
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
@@ -479,7 +480,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                       return ChoiceChip(
                         label: Text(label),
                         selected: isSel,
-                        selectedColor: AppColors.primaryOrange,
+                        selectedColor: AppColors.primaryOrange, // Vibrant Orange #FF5008
+                        backgroundColor: AppColors.desertSand,
+                        checkmarkColor: Colors.white,
                         labelStyle: TextStyle(
                           color: isSel ? Colors.white : AppColors.charcoal,
                           fontWeight: FontWeight.bold,
@@ -568,6 +571,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
     );
   }
 
+  // Answer Options Chips in Vibrant Logo Orange (#FF5008)
   Widget _buildCustomChip({
     required String label,
     required bool isSelected,
@@ -579,18 +583,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryOrange.withValues(alpha: 0.35) : Colors.black.withValues(alpha: 0.25),
+          color: isSelected ? AppColors.primaryOrange : Colors.black.withValues(alpha: 0.30), // Vibrant Orange #FF5008
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? AppColors.primaryOrange : Colors.white.withValues(alpha: 0.35),
             width: isSelected ? 2.0 : 1.0,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primaryOrange.withValues(alpha: 0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (isSelected) ...[
-              const Icon(Icons.check_circle_rounded, color: AppColors.primaryOrange, size: 16),
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
               const SizedBox(width: 6),
             ],
             Text(
@@ -621,9 +634,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: color.withValues(alpha: 0.25),
+            backgroundColor: color,
             radius: 24,
-            child: Icon(icon, color: color, size: 28),
+            child: Icon(icon, color: Colors.white, size: 26),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -632,7 +645,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
               children: [
                 Text(
                   title,
-                  style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 4),
                 Text(

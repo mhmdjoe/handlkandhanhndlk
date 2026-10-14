@@ -35,7 +35,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
         title: Text(loc.translate('myTripsTitle')),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.nileTeal, size: 28),
+            icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primaryOrange, size: 28),
             onPressed: () {
               Navigator.push(
                 context,
@@ -65,8 +65,8 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                       ),
                     ),
                     selected: _selectedStatusFilter == 'All',
-                    selectedColor: AppColors.nileTeal,
-                    backgroundColor: AppColors.desertSand,
+                    selectedColor: AppColors.primaryPurple,
+                    backgroundColor: AppColors.lightPurple,
                     checkmarkColor: Colors.white,
                     onSelected: (_) => setState(() => _selectedStatusFilter = 'All'),
                   ),
@@ -81,8 +81,8 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                       ),
                     ),
                     selected: _selectedStatusFilter == 'Active Journey',
-                    selectedColor: AppColors.nileTeal,
-                    backgroundColor: AppColors.desertSand,
+                    selectedColor: AppColors.primaryPurple,
+                    backgroundColor: AppColors.lightPurple,
                     checkmarkColor: Colors.white,
                     onSelected: (_) => setState(() => _selectedStatusFilter = 'Active Journey'),
                   ),
@@ -97,8 +97,8 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                       ),
                     ),
                     selected: _selectedStatusFilter == 'Confirmed',
-                    selectedColor: AppColors.nileTeal,
-                    backgroundColor: AppColors.desertSand,
+                    selectedColor: AppColors.primaryPurple,
+                    backgroundColor: AppColors.lightPurple,
                     checkmarkColor: Colors.white,
                     onSelected: (_) => setState(() => _selectedStatusFilter = 'Confirmed'),
                   ),
@@ -114,16 +114,16 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.card_travel, size: 72, color: AppColors.textMuted),
+                          const Icon(Icons.card_travel, size: 72, color: AppColors.mediumGray),
                           const SizedBox(height: 16),
                           Text(
                             loc.translate('noTripsYet'),
-                            style: const TextStyle(fontSize: 16, color: AppColors.textMuted),
+                            style: const TextStyle(fontSize: 16, color: AppColors.mediumGray),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 24),
 
-                          // Custom Trip Builder Button
+                          // Custom Trip Builder Button in Vibrant Orange (#FF5008)
                           ElevatedButton.icon(
                             onPressed: () {
                               Navigator.push(
@@ -134,8 +134,11 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                             icon: const Icon(Icons.add_location_alt_rounded),
                             label: Text(isAr ? 'صمم رحلتك بنفسك' : 'Build Custom Trip'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.nileTeal,
+                              backgroundColor: AppColors.primaryOrange, // Vibrant Orange #FF5008
+                              foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                              elevation: 3,
+                              shadowColor: AppColors.primaryOrange.withValues(alpha: 0.4),
                             ),
                           ),
                         ],
@@ -203,7 +206,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                                         ),
                                         child: Text(
                                           isAr ? 'رحلة قائمة' : 'Active Journey',
-                                          style: const TextStyle(color: AppColors.nileTeal, fontWeight: FontWeight.bold, fontSize: 11),
+                                          style: const TextStyle(color: AppColors.primaryPurple, fontWeight: FontWeight.bold, fontSize: 11),
                                         ),
                                       ),
                                     ],
@@ -244,7 +247,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                                   // Whole Trip Itinerary Summary Preview
                                   Text(
                                     isAr ? 'ملخص جدول الرحلة الخاص بك' : 'Whole Trip Itinerary Summary',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.nileTeal),
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.primaryPurple),
                                   ),
                                   const SizedBox(height: 8),
 
@@ -267,19 +270,19 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                             decoration: BoxDecoration(
-                                              color: AppColors.desertSand,
+                                              color: AppColors.lightPurple,
                                               borderRadius: BorderRadius.circular(6),
                                             ),
                                             child: Text(
                                               'Day $dayNum',
-                                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.nileTeal),
+                                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primaryPurple),
                                             ),
                                           ),
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
                                               names.isEmpty ? (isAr ? 'يوم حر للاستجمام والتجول' : 'Free leisure day') : names,
-                                              style: const TextStyle(fontSize: 12, color: AppColors.charcoal),
+                                              style: const TextStyle(fontSize: 12, color: AppColors.darkGray),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
@@ -292,7 +295,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                                   if (totalDays > 3)
                                     Text(
                                       isAr ? '+ ${totalDays - 3} أيام إضافية في الرحلة' : '+ ${totalDays - 3} more days in whole trip...',
-                                      style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontStyle: FontStyle.italic),
+                                      style: const TextStyle(fontSize: 11, color: AppColors.mediumGray, fontStyle: FontStyle.italic),
                                     ),
 
                                   const Divider(height: 24),
@@ -305,18 +308,18 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                                         children: [
                                           Text(
                                             loc.translate('estimatedCost'),
-                                            style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                            style: const TextStyle(fontSize: 11, color: AppColors.mediumGray),
                                           ),
                                           Text(
                                             provider.formatPrice(trip.totalCostEgp, trip.totalCostUsd),
-                                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.terracotta),
+                                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.primaryOrange),
                                           ),
                                         ],
                                       ),
                                       const Spacer(),
 
                                       IconButton(
-                                        icon: const Icon(Icons.map_outlined, color: AppColors.nileTeal),
+                                        icon: const Icon(Icons.map_outlined, color: AppColors.primaryPurple),
                                         onPressed: () {
                                           Navigator.push(
                                             context,
@@ -325,6 +328,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                                         },
                                       ),
 
+                                      // View Whole Trip Button in Vibrant Orange (#FF5008)
                                       ElevatedButton.icon(
                                         onPressed: () {
                                           Navigator.push(
@@ -336,7 +340,11 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                                         },
                                         icon: const Icon(Icons.open_in_new_rounded, size: 16),
                                         label: Text(isAr ? 'عرض الرحلة بالكامل' : 'View Whole Trip'),
-                                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.nileTeal),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColors.primaryOrange, // Vibrant Orange #FF5008
+                                          foregroundColor: Colors.white,
+                                          elevation: 2,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -357,13 +365,13 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
   Widget _metricCell({required IconData icon, required String label, required String value}) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: AppColors.nileTeal),
+        Icon(icon, size: 18, color: AppColors.primaryPurple),
         const SizedBox(width: 6),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textMuted)),
-            Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            Text(label, style: const TextStyle(fontSize: 10, color: AppColors.mediumGray)),
+            Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.darkGray)),
           ],
         ),
       ],
