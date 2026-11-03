@@ -4,6 +4,8 @@ import '../../providers/app_provider.dart';
 import '../../data/tourism_database.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/app_motion.dart';
+import '../../widgets/apple_touchable.dart';
 import '../../widgets/network_image_with_fallback.dart';
 import '../planner/itinerary_detail_screen.dart';
 import '../planner/trip_wizard_screen.dart';
@@ -17,7 +19,7 @@ class MyTripsScreen extends StatefulWidget {
 }
 
 class _MyTripsScreenState extends State<MyTripsScreen> {
-  String _selectedStatusFilter = 'All'; // 'All', 'Active Journey', 'Confirmed'
+  String _selectedStatusFilter = 'All';
 
   @override
   Widget build(BuildContext context) {
@@ -34,73 +36,89 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
       appBar: AppBar(
         title: Text(loc.translate('myTripsTitle')),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primaryOrange, size: 28),
-            onPressed: () {
+          AppleTouchable(
+            onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const TripWizardScreen()),
+                AppCupertinoPageRoute(page: const TripWizardScreen()),
               );
             },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Icon(Icons.add_circle_outline_rounded, color: AppColors.primaryOrange, size: 28),
+            ),
           ),
         ],
       ),
       body: Column(
         children: [
-          // Status Filter Chips with Sunset Orange Selection
+          // Status Filter Chips
           if (allTrips.isNotEmpty)
             SizedBox(
               height: 48,
               child: ListView(
+                physics: const BouncingScrollPhysics(),
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 children: [
-                  ChoiceChip(
-                    label: Text(
-                      isAr ? 'جميع الرحلات (${allTrips.length})' : 'All Trips (${allTrips.length})',
-                      style: TextStyle(
-                        color: _selectedStatusFilter == 'All' ? Colors.white : AppColors.charcoal,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                  AppleTouchable(
+                    pressedScale: 0.92,
+                    onTap: () => setState(() => _selectedStatusFilter = 'All'),
+                    child: ChoiceChip(
+                      label: Text(
+                        isAr ? 'جميع الرحلات (${allTrips.length})' : 'All Trips (${allTrips.length})',
+                        style: TextStyle(
+                          color: _selectedStatusFilter == 'All' ? Colors.white : AppColors.darkGray,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
+                      selected: _selectedStatusFilter == 'All',
+                      onSelected: null,
+                      selectedColor: AppColors.primaryOrange,
+                      backgroundColor: AppColors.lightPurple,
+                      checkmarkColor: Colors.white,
                     ),
-                    selected: _selectedStatusFilter == 'All',
-                    selectedColor: AppColors.primaryOrange, // Sunset Orange #FF5008
-                    backgroundColor: AppColors.lightPurple,
-                    checkmarkColor: Colors.white,
-                    onSelected: (_) => setState(() => _selectedStatusFilter = 'All'),
                   ),
                   const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: Text(
-                      isAr ? 'رحلات قائمة' : 'Active Journeys',
-                      style: TextStyle(
-                        color: _selectedStatusFilter == 'Active Journey' ? Colors.white : AppColors.charcoal,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                  AppleTouchable(
+                    pressedScale: 0.92,
+                    onTap: () => setState(() => _selectedStatusFilter = 'Active Journey'),
+                    child: ChoiceChip(
+                      label: Text(
+                        isAr ? 'رحلات قائمة' : 'Active Journeys',
+                        style: TextStyle(
+                          color: _selectedStatusFilter == 'Active Journey' ? Colors.white : AppColors.darkGray,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
+                      selected: _selectedStatusFilter == 'Active Journey',
+                      onSelected: null,
+                      selectedColor: AppColors.primaryOrange,
+                      backgroundColor: AppColors.lightPurple,
+                      checkmarkColor: Colors.white,
                     ),
-                    selected: _selectedStatusFilter == 'Active Journey',
-                    selectedColor: AppColors.primaryOrange, // Sunset Orange #FF5008
-                    backgroundColor: AppColors.lightPurple,
-                    checkmarkColor: Colors.white,
-                    onSelected: (_) => setState(() => _selectedStatusFilter = 'Active Journey'),
                   ),
                   const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: Text(
-                      loc.translate('statusConfirmed'),
-                      style: TextStyle(
-                        color: _selectedStatusFilter == 'Confirmed' ? Colors.white : AppColors.charcoal,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                  AppleTouchable(
+                    pressedScale: 0.92,
+                    onTap: () => setState(() => _selectedStatusFilter = 'Confirmed'),
+                    child: ChoiceChip(
+                      label: Text(
+                        loc.translate('statusConfirmed'),
+                        style: TextStyle(
+                          color: _selectedStatusFilter == 'Confirmed' ? Colors.white : AppColors.darkGray,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
+                      selected: _selectedStatusFilter == 'Confirmed',
+                      onSelected: null,
+                      selectedColor: AppColors.primaryOrange,
+                      backgroundColor: AppColors.lightPurple,
+                      checkmarkColor: Colors.white,
                     ),
-                    selected: _selectedStatusFilter == 'Confirmed',
-                    selectedColor: AppColors.primaryOrange, // Sunset Orange #FF5008
-                    backgroundColor: AppColors.lightPurple,
-                    checkmarkColor: Colors.white,
-                    onSelected: (_) => setState(() => _selectedStatusFilter = 'Confirmed'),
                   ),
                 ],
               ),
@@ -114,31 +132,35 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.card_travel, size: 72, color: AppColors.mediumGray),
+                          const Icon(Icons.card_travel_rounded, size: 64, color: AppColors.mediumGray),
                           const SizedBox(height: 16),
                           Text(
-                            loc.translate('noTripsYet'),
-                            style: const TextStyle(fontSize: 16, color: AppColors.mediumGray),
+                            loc.translate('noTrips'),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkGray),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            loc.translate('noTripsSub'),
                             textAlign: TextAlign.center,
+                            style: const TextStyle(color: AppColors.mediumGray, fontSize: 14),
                           ),
                           const SizedBox(height: 24),
-
-                          // Custom Trip Builder Button in Vibrant Orange (#FF5008)
-                          ElevatedButton.icon(
-                            onPressed: () {
+                          AppleTouchable(
+                            onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => const TripWizardScreen()),
+                                AppCupertinoPageRoute(page: const TripWizardScreen()),
                               );
                             },
-                            icon: const Icon(Icons.add_location_alt_rounded),
-                            label: Text(isAr ? 'صمم رحلتك بنفسك' : 'Build Custom Trip'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryOrange, // Vibrant Orange #FF5008
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                              elevation: 3,
-                              shadowColor: AppColors.primaryOrange.withValues(alpha: 0.4),
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  AppCupertinoPageRoute(page: const TripWizardScreen()),
+                                );
+                              },
+                              icon: const Icon(Icons.auto_awesome_rounded),
+                              label: Text(loc.translate('createFirstTrip')),
                             ),
                           ),
                         ],
@@ -146,212 +168,138 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                     ),
                   )
                 : ListView.builder(
+                    physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                     padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 110),
                     itemCount: filteredTrips.length,
                     itemBuilder: (context, index) {
                       final trip = filteredTrips[index];
-                      final destination = TourismDatabase.destinations.firstWhere(
+                      final dest = TourismDatabase.destinations.firstWhere(
                         (d) => d.id == trip.destinationId,
                         orElse: () => TourismDatabase.destinations.first,
                       );
 
-                      final totalDays = trip.daysCount;
-
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 20),
-                        clipBehavior: Clip.antiAlias,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Whole Trip Banner Image
-                            Stack(
+                      return StaggeredEntranceItem(
+                        index: index,
+                        child: AppleTouchable(
+                          pressedScale: 0.97,
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              AppCupertinoPageRoute(
+                                page: ItineraryDetailScreen(trip: trip),
+                              ),
+                            );
+                          },
+                          child: Card(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                SafeNetworkImage(
-                                  imageUrl: destination.imageUrl,
-                                  height: 130,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
-                                Container(
-                                  height: 130,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
-                                      begin: Alignment.bottomCenter,
-                                      end: Alignment.topCenter,
+                                Stack(
+                                  children: [
+                                    SafeNetworkImage(
+                                      imageUrl: trip.coverImageUrl,
+                                      height: 140,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                                     ),
-                                  ),
+                                    Container(
+                                      height: 140,
+                                      decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                                        gradient: LinearGradient(
+                                          colors: [Colors.black.withValues(alpha: 0.70), Colors.transparent],
+                                          begin: Alignment.bottomCenter,
+                                          end: Alignment.topCenter,
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 12,
+                                      right: 12,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: trip.status == 'Active Journey'
+                                              ? AppColors.primaryOrange
+                                              : AppColors.primaryPurple,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          trip.status,
+                                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      bottom: 12,
+                                      left: 12,
+                                      right: 12,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            trip.title,
+                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17, letterSpacing: -0.2),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            '${isAr ? dest.nameAr : dest.nameEn} • ${trip.daysCount} ${loc.translate('days')}',
+                                            style: const TextStyle(color: AppColors.papyrusGold, fontSize: 12, fontWeight: FontWeight.w600),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                Positioned(
-                                  bottom: 12,
-                                  left: 16,
-                                  right: 16,
+                                Padding(
+                                  padding: const EdgeInsets.all(14),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Expanded(
-                                        child: Text(
-                                          trip.title,
-                                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.event_outlined, size: 16, color: AppColors.mediumGray),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${trip.startDate.day}/${trip.startDate.month}/${trip.startDate.year}',
+                                            style: const TextStyle(fontSize: 12, color: AppColors.darkGray, fontWeight: FontWeight.w500),
+                                          ),
+                                        ],
                                       ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.papyrusGold,
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Text(
-                                          isAr ? 'رحلة قائمة' : 'Active Journey',
-                                          style: const TextStyle(color: AppColors.primaryPurple, fontWeight: FontWeight.bold, fontSize: 11),
-                                        ),
+                                      Row(
+                                        children: [
+                                          AppleTouchable(
+                                            pressedScale: 0.85,
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                AppCupertinoPageRoute(
+                                                  page: const InteractiveMapScreen(),
+                                                ),
+                                              );
+                                            },
+                                            child: const Padding(
+                                              padding: EdgeInsets.all(6),
+                                              child: Icon(Icons.map_outlined, color: AppColors.primaryPurple, size: 22),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            provider.formatPrice(trip.totalCostEgp, trip.totalCostUsd),
+                                            style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryOrange, fontSize: 15),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
                                 ),
                               ],
                             ),
-
-                            // Whole Trip Details Body
-                            Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Metrics Bar
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      _metricCell(
-                                        icon: Icons.map_outlined,
-                                        label: isAr ? 'الوجهة' : 'Destination',
-                                        value: isAr ? destination.nameAr : destination.nameEn,
-                                      ),
-                                      _metricCell(
-                                        icon: Icons.calendar_today_rounded,
-                                        label: isAr ? 'مدة الرحلة' : 'Duration',
-                                        value: '$totalDays ${isAr ? 'أيام' : 'Days'}',
-                                      ),
-                                      _metricCell(
-                                        icon: Icons.people_outline_rounded,
-                                        label: isAr ? 'المسافرون' : 'Travelers',
-                                        value: '${trip.travelerCount}',
-                                      ),
-                                    ],
-                                  ),
-                                  const Divider(height: 24),
-
-                                  // Whole Trip Itinerary Summary Preview
-                                  Text(
-                                    isAr ? 'ملخص جدول الرحلة الخاص بك' : 'Whole Trip Itinerary Summary',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.primaryPurple),
-                                  ),
-                                  const SizedBox(height: 8),
-
-                                  ...List.generate(totalDays > 3 ? 3 : totalDays, (dIdx) {
-                                    final dayNum = dIdx + 1;
-                                    final dayItems = trip.items.where((i) => i.dayNumber == dayNum).toList();
-                                    final names = dayItems.map((i) {
-                                      final a = TourismDatabase.attractions.firstWhere(
-                                        (att) => att.id == i.attractionId,
-                                        orElse: () => TourismDatabase.attractions.first,
-                                      );
-                                      return isAr ? a.nameAr : a.nameEn;
-                                    }).join(' • ');
-
-                                    return Padding(
-                                      padding: const EdgeInsets.only(bottom: 6),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.lightPurple,
-                                              borderRadius: BorderRadius.circular(6),
-                                            ),
-                                            child: Text(
-                                              'Day $dayNum',
-                                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primaryPurple),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              names.isEmpty ? (isAr ? 'يوم حر للاستجمام والتجول' : 'Free leisure day') : names,
-                                              style: const TextStyle(fontSize: 12, color: AppColors.darkGray),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }),
-
-                                  if (totalDays > 3)
-                                    Text(
-                                      isAr ? '+ ${totalDays - 3} أيام إضافية في الرحلة' : '+ ${totalDays - 3} more days in whole trip...',
-                                      style: const TextStyle(fontSize: 11, color: AppColors.mediumGray, fontStyle: FontStyle.italic),
-                                    ),
-
-                                  const Divider(height: 24),
-
-                                  // Action Bar: Whole Trip View & Map
-                                  Row(
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            loc.translate('estimatedCost'),
-                                            style: const TextStyle(fontSize: 11, color: AppColors.mediumGray),
-                                          ),
-                                          Text(
-                                            provider.formatPrice(trip.totalCostEgp, trip.totalCostUsd),
-                                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.primaryOrange),
-                                          ),
-                                        ],
-                                      ),
-                                      const Spacer(),
-
-                                      IconButton(
-                                        icon: const Icon(Icons.map_outlined, color: AppColors.primaryPurple),
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(builder: (_) => const InteractiveMapScreen()),
-                                          );
-                                        },
-                                      ),
-
-                                      // View Whole Trip Button in Vibrant Orange (#FF5008)
-                                      ElevatedButton.icon(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => ItineraryDetailScreen(trip: trip),
-                                            ),
-                                          );
-                                        },
-                                        icon: const Icon(Icons.open_in_new_rounded, size: 16),
-                                        label: Text(isAr ? 'عرض الرحلة بالكامل' : 'View Whole Trip'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppColors.primaryOrange, // Vibrant Orange #FF5008
-                                          foregroundColor: Colors.white,
-                                          elevation: 2,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       );
                     },
@@ -359,22 +307,6 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _metricCell({required IconData icon, required String label, required String value}) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: AppColors.primaryPurple),
-        const SizedBox(width: 6),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 10, color: AppColors.mediumGray)),
-            Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.darkGray)),
-          ],
-        ),
-      ],
     );
   }
 }

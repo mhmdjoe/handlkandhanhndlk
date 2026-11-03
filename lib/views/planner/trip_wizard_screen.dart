@@ -4,6 +4,8 @@ import '../../data/tourism_database.dart';
 import '../../providers/app_provider.dart';
 import '../../services/itinerary_engine.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/app_motion.dart';
+import '../../widgets/apple_touchable.dart';
 import '../navigation_shell.dart';
 
 class TripWizardScreen extends StatefulWidget {
@@ -15,7 +17,7 @@ class TripWizardScreen extends StatefulWidget {
 
 class _TripWizardScreenState extends State<TripWizardScreen> {
   final _titleController = TextEditingController(text: 'My Egyptian Journey');
-  String _selectedDestinationId = 'all'; // Default to All Egypt
+  String _selectedDestinationId = 'all';
   int _travelerCount = 2;
   String _selectedBudget = 'Moderate';
   int _daysCount = 3;
@@ -36,6 +38,7 @@ class _TripWizardScreenState extends State<TripWizardScreen> {
         title: Text(isAr ? 'تصميم رحلة مخصصة' : 'Custom Trip Builder'),
       ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,12 +47,19 @@ class _TripWizardScreenState extends State<TripWizardScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.nileTeal,
-                borderRadius: BorderRadius.circular(16),
+                color: AppColors.primaryPurple,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryPurple.withValues(alpha: 0.25),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.explore_outlined, color: AppColors.papyrusGold, size: 32),
+                  const Icon(Icons.auto_awesome_rounded, color: AppColors.papyrusGold, size: 32),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -57,11 +67,12 @@ class _TripWizardScreenState extends State<TripWizardScreen> {
                       children: [
                         Text(
                           isAr ? 'صمم رحلتك بنفسك' : 'Customize Your Own Trip',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: -0.2),
                         ),
+                        const SizedBox(height: 2),
                         Text(
                           isAr ? 'حدد الخيارات ثم انتقل للاستكشاف لإضافة الأماكن والأوقات' : 'Set details, then explore places & pick visit days & times',
-                          style: const TextStyle(color: AppColors.desertSand, fontSize: 12),
+                          style: const TextStyle(color: AppColors.lightPurple, fontSize: 12),
                         ),
                       ],
                     ),
@@ -74,14 +85,14 @@ class _TripWizardScreenState extends State<TripWizardScreen> {
             // 1. Trip Name
             Text(
               isAr ? 'اسم الرحلة' : 'Trip Name',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.nileTeal),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.primaryPurple),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _titleController,
               decoration: InputDecoration(
                 hintText: isAr ? 'مثال: جولة معالم مصر الكبرى' : 'e.g. Grand Tour of Egypt',
-                prefixIcon: const Icon(Icons.edit_outlined, color: AppColors.nileTeal),
+                prefixIcon: const Icon(Icons.edit_outlined, color: AppColors.primaryPurple),
               ),
             ),
             const SizedBox(height: 20),
@@ -89,18 +100,18 @@ class _TripWizardScreenState extends State<TripWizardScreen> {
             // 2. Select Main City / All Egypt Option
             Text(
               isAr ? 'اختر المدينة / الوجهة (أو كل مصر)' : 'Select Destination City (or All Egypt)',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.nileTeal),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.primaryPurple),
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               initialValue: _selectedDestinationId,
-              decoration: const InputDecoration(prefixIcon: Icon(Icons.location_on_outlined, color: AppColors.nileTeal)),
+              decoration: const InputDecoration(prefixIcon: Icon(Icons.location_on_outlined, color: AppColors.primaryPurple)),
               items: [
                 DropdownMenuItem(
                   value: 'all',
                   child: Text(
                     isAr ? 'جميع أنحاء مصر (كل المحافظات)' : 'All Egypt (All Governorates)',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.nileTeal),
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryPurple),
                   ),
                 ),
                 ...TourismDatabase.destinations.map((d) {
@@ -121,7 +132,7 @@ class _TripWizardScreenState extends State<TripWizardScreen> {
             // 3. Number of Travelers
             Text(
               isAr ? 'عدد المسافرين' : 'Number of Travelers',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.nileTeal),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.primaryPurple),
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -133,17 +144,21 @@ class _TripWizardScreenState extends State<TripWizardScreen> {
                     ? (isAr ? '1 مسافر' : '1 Solo')
                     : '$count ${isAr ? 'مسافرين' : 'Travelers'}';
 
-                return ChoiceChip(
-                  label: Text(label),
-                  selected: isSel,
-                  selectedColor: AppColors.papyrusGold,
-                  backgroundColor: AppColors.desertSand,
-                  checkmarkColor: AppColors.nileTeal,
-                  labelStyle: TextStyle(
-                    color: isSel ? AppColors.nileTeal : AppColors.charcoal,
-                    fontWeight: FontWeight.bold,
+                return AppleTouchable(
+                  pressedScale: 0.92,
+                  onTap: () => setState(() => _travelerCount = count),
+                  child: ChoiceChip(
+                    label: Text(label),
+                    selected: isSel,
+                    onSelected: null,
+                    selectedColor: AppColors.primaryOrange,
+                    backgroundColor: AppColors.lightPurple,
+                    checkmarkColor: Colors.white,
+                    labelStyle: TextStyle(
+                      color: isSel ? Colors.white : AppColors.darkGray,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  onSelected: (_) => setState(() => _travelerCount = count),
                 );
               }).toList(),
             ),
@@ -152,25 +167,29 @@ class _TripWizardScreenState extends State<TripWizardScreen> {
             // 4. Budget Tier
             Text(
               isAr ? 'فئة الميزانية' : 'Budget Tier',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.nileTeal),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.primaryPurple),
             ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: ['Budget', 'Moderate', 'Luxury'].map((b) {
+              children: ['Budget', 'Moderate', 'Luxury', 'Eco Lodge'].map((b) {
                 final isSel = _selectedBudget == b;
-                return ChoiceChip(
-                  label: Text(b),
-                  selected: isSel,
-                  selectedColor: AppColors.nileTeal,
-                  backgroundColor: AppColors.desertSand,
-                  checkmarkColor: Colors.white,
-                  labelStyle: TextStyle(
-                    color: isSel ? Colors.white : AppColors.charcoal,
-                    fontWeight: FontWeight.bold,
+                return AppleTouchable(
+                  pressedScale: 0.92,
+                  onTap: () => setState(() => _selectedBudget = b),
+                  child: ChoiceChip(
+                    label: Text(b),
+                    selected: isSel,
+                    onSelected: null,
+                    selectedColor: AppColors.primaryPurple,
+                    backgroundColor: AppColors.lightPurple,
+                    checkmarkColor: Colors.white,
+                    labelStyle: TextStyle(
+                      color: isSel ? Colors.white : AppColors.darkGray,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  onSelected: (_) => setState(() => _selectedBudget = b),
                 );
               }).toList(),
             ),
@@ -179,7 +198,7 @@ class _TripWizardScreenState extends State<TripWizardScreen> {
             // 5. Trip Duration in Days
             Text(
               isAr ? 'عدد أيام الرحلة المتاحة' : 'Free Trip Days',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.nileTeal),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.primaryPurple),
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -187,30 +206,37 @@ class _TripWizardScreenState extends State<TripWizardScreen> {
               runSpacing: 8,
               children: [1, 2, 3, 5, 7, 10].map((days) {
                 final isSel = _daysCount == days;
-                return ChoiceChip(
-                  label: Text('$days ${isAr ? 'أيام' : 'Days'}'),
-                  selected: isSel,
-                  selectedColor: AppColors.nileTeal,
-                  backgroundColor: AppColors.desertSand,
-                  checkmarkColor: Colors.white,
-                  labelStyle: TextStyle(
-                    color: isSel ? Colors.white : AppColors.charcoal,
-                    fontWeight: FontWeight.bold,
+                return AppleTouchable(
+                  pressedScale: 0.92,
+                  onTap: () => setState(() => _daysCount = days),
+                  child: ChoiceChip(
+                    label: Text('$days ${isAr ? 'أيام' : 'Days'}'),
+                    selected: isSel,
+                    onSelected: null,
+                    selectedColor: AppColors.primaryOrange,
+                    backgroundColor: AppColors.lightPurple,
+                    checkmarkColor: Colors.white,
+                    labelStyle: TextStyle(
+                      color: isSel ? Colors.white : AppColors.darkGray,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  onSelected: (_) => setState(() => _daysCount = days),
                 );
               }).toList(),
             ),
             const SizedBox(height: 32),
 
             // Go to Explore Button
-            ElevatedButton.icon(
-              onPressed: () => _createTripAndOpenExplore(provider, isAr),
-              icon: const Icon(Icons.travel_explore_rounded),
-              label: Text(isAr ? 'الانتقال لاستكشاف وإضافة الأماكن والأوقات' : 'Go to Explore & Pick Places with Times'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-                backgroundColor: AppColors.nileTeal,
+            AppleTouchable(
+              onTap: () => _createTripAndOpenExplore(provider, isAr),
+              child: ElevatedButton.icon(
+                onPressed: () => _createTripAndOpenExplore(provider, isAr),
+                icon: const Icon(Icons.travel_explore_rounded),
+                label: Text(isAr ? 'الانتقال لاستكشاف وإضافة الأماكن والأوقات' : 'Go to Explore & Pick Places with Times'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                  backgroundColor: AppColors.primaryPurple,
+                ),
               ),
             ),
           ],
@@ -230,7 +256,6 @@ class _TripWizardScreenState extends State<TripWizardScreen> {
         ? (isAr ? 'رحلة $selectedCityName' : 'My $selectedCityName Holiday')
         : _titleController.text.trim();
 
-    // Generate initialized trip
     final trip = ItineraryEngine.generateAutoTrip(
       title: tripName,
       destinationId: destinationId,
@@ -250,16 +275,15 @@ class _TripWizardScreenState extends State<TripWizardScreen> {
               ? 'تم تجهيز الرحلة! تصفح الأماكن واضغط (+) لإضافتها باليوم والتوقيت المناسب.'
               : 'Trip initialized! Browse places below and tap (+) Add to Trip to pick days & times.',
         ),
-        backgroundColor: AppColors.nileTeal,
+        backgroundColor: AppColors.primaryPurple,
         duration: const Duration(seconds: 4),
       ),
     );
 
-    // Route directly to the Explore Page (Tab index 1)
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (_) => const NavigationShell(initialIndex: 1),
+      AppCupertinoPageRoute(
+        page: const NavigationShell(initialIndex: 1),
       ),
     );
   }

@@ -4,6 +4,8 @@ import '../../models/models.dart';
 import '../../providers/app_provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/app_motion.dart';
+import '../../widgets/apple_touchable.dart';
 import '../../widgets/network_image_with_fallback.dart';
 import '../../widgets/add_to_trip_modal.dart';
 
@@ -21,11 +23,13 @@ class AttractionDetailScreen extends StatelessWidget {
 
     return Scaffold(
       body: CustomScrollView(
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         slivers: [
-          // Hero Image Header
+          // Hero Image Header with Apple Translucent Backdrop
           SliverAppBar(
             expandedHeight: 280,
             pinned: true,
+            backgroundColor: AppColors.primaryPurple,
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
@@ -41,9 +45,9 @@ class AttractionDetailScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.black.withValues(alpha: 0.60),
+                          Colors.black.withValues(alpha: 0.65),
                           Colors.transparent,
-                          Colors.black.withValues(alpha: 0.60),
+                          Colors.black.withValues(alpha: 0.70),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -54,9 +58,24 @@ class AttractionDetailScreen extends StatelessWidget {
               ),
             ),
             actions: [
-              IconButton(
-                icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: isFav ? Colors.red : Colors.white),
-                onPressed: () => provider.toggleFavorite(attraction.id),
+              AppleTouchable(
+                pressedScale: 0.85,
+                onTap: () => provider.toggleFavorite(attraction.id),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isFav ? Icons.favorite : Icons.favorite_border,
+                      color: isFav ? Colors.red : Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -68,116 +87,149 @@ class AttractionDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Official Verification Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.verifiedGreen.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.verifiedGreen.withValues(alpha: 0.4)),
+                  StaggeredEntranceItem(
+                    index: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.verifiedGreen.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.verifiedGreen.withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.verified, color: AppColors.verifiedGreen, size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            loc.translate('verifiedSource'),
+                            style: const TextStyle(color: AppColors.verifiedGreen, fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Title & Meta
+                  StaggeredEntranceItem(
+                    index: 1,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.verified, color: AppColors.verifiedGreen, size: 16),
-                        const SizedBox(width: 6),
                         Text(
-                          loc.translate('verifiedSource'),
-                          style: const TextStyle(color: AppColors.verifiedGreen, fontWeight: FontWeight.bold, fontSize: 12),
+                          isAr ? attraction.nameAr : attraction.nameEn,
+                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryPurple, letterSpacing: -0.4),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${isAr ? attraction.governorateAr : attraction.governorateEn} • ${isAr ? attraction.category.nameAr : attraction.category.nameEn}',
+                          style: const TextStyle(color: AppColors.primaryOrange, fontWeight: FontWeight.w600, fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Key Info Cards Grid
+                  StaggeredEntranceItem(
+                    index: 2,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _infoCard(
+                            icon: Icons.confirmation_number_outlined,
+                            label: loc.translate('entranceFee'),
+                            value: provider.formatPrice(attraction.priceEgp, attraction.priceUsd),
+                            isPrice: true,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _infoCard(
+                            icon: Icons.access_time_rounded,
+                            label: loc.translate('openingHours'),
+                            value: '${attraction.openingTime} - ${attraction.closingTime}',
+                          ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12),
-
-                  // Title
-                  Text(
-                    isAr ? attraction.nameAr : attraction.nameEn,
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.nileTeal),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${isAr ? attraction.governorateAr : attraction.governorateEn} • ${isAr ? attraction.category.nameAr : attraction.category.nameEn}',
-                    style: const TextStyle(color: AppColors.terracotta, fontWeight: FontWeight.w600, fontSize: 14),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Key Info Cards Grid
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _infoCard(
-                          icon: Icons.confirmation_number_outlined,
-                          label: loc.translate('entranceFee'),
-                          value: provider.formatPrice(attraction.priceEgp, attraction.priceUsd),
-                          isPrice: true,
+                  StaggeredEntranceItem(
+                    index: 3,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _infoCard(
+                            icon: Icons.timer_outlined,
+                            label: loc.translate('duration'),
+                            value: '${attraction.estimatedDurationMinutes} mins',
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _infoCard(
-                          icon: Icons.access_time,
-                          label: loc.translate('openingHours'),
-                          value: '${attraction.openingTime} - ${attraction.closingTime}',
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _infoCard(
+                            icon: Icons.family_restroom_rounded,
+                            label: loc.translate('familySuitability'),
+                            value: attraction.isFamilyFriendly ? (isAr ? 'نعم' : 'Yes') : (isAr ? 'لا' : 'No'),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _infoCard(
-                          icon: Icons.timer_outlined,
-                          label: loc.translate('duration'),
-                          value: '${attraction.estimatedDurationMinutes} mins',
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _infoCard(
-                          icon: Icons.family_restroom,
-                          label: loc.translate('familySuitability'),
-                          value: attraction.isFamilyFriendly ? (isAr ? 'نعم' : 'Yes') : (isAr ? 'لا' : 'No'),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 24),
 
                   // Description
-                  Text(
-                    isAr ? 'عن المكان' : 'About Attraction',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.nileTeal),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    isAr ? attraction.descriptionAr : attraction.descriptionEn,
-                    style: const TextStyle(fontSize: 15, height: 1.5, color: AppColors.charcoal),
+                  StaggeredEntranceItem(
+                    index: 4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isAr ? 'عن المكان' : 'About Attraction',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryPurple, letterSpacing: -0.3),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          isAr ? attraction.descriptionAr : attraction.descriptionEn,
+                          style: const TextStyle(fontSize: 15, height: 1.5, color: AppColors.darkGray),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 24),
 
                   // Practical Tips
                   if (attraction.tipsEn.isNotEmpty) ...[
-                    Text(
-                      isAr ? 'نصائح مهمة للزيارة' : 'Visiting Tips',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.nileTeal),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.desertSand,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.borderLight),
-                      ),
-                      child: Row(
+                    StaggeredEntranceItem(
+                      index: 5,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.lightbulb_outline, color: AppColors.papyrusGold),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              isAr ? attraction.tipsAr : attraction.tipsEn,
-                              style: const TextStyle(fontSize: 14),
+                          Text(
+                            isAr ? 'نصائح مهمة للزيارة' : 'Visiting Tips',
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryPurple, letterSpacing: -0.3),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: AppColors.lightPurple,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppColors.borderLight),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.lightbulb_outline_rounded, color: AppColors.papyrusGold),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    isAr ? attraction.tipsAr : attraction.tipsEn,
+                                    style: const TextStyle(fontSize: 14, color: AppColors.darkGray),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -187,25 +239,39 @@ class AttractionDetailScreen extends StatelessWidget {
                   ],
 
                   // Verified Source Reference
-                  Text(
-                    isAr ? 'مصدر توثيق البيانات' : 'Data Verification Source',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textMuted),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${attraction.verifiedSource} (${attraction.verificationDate})',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                  StaggeredEntranceItem(
+                    index: 6,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isAr ? 'مصدر توثيق البيانات' : 'Data Verification Source',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.mediumGray),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${attraction.verifiedSource} (${attraction.verificationDate})',
+                          style: const TextStyle(fontSize: 12, color: AppColors.mediumGray),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 32),
 
                   // Action Button: Add to Trip Popup Modal
-                  ElevatedButton.icon(
-                    onPressed: () => AddToTripModal.show(context, attraction),
-                    icon: const Icon(Icons.add_circle_outline),
-                    label: Text(loc.translate('addToTrip')),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      backgroundColor: AppColors.nileTeal,
+                  StaggeredEntranceItem(
+                    index: 7,
+                    child: AppleTouchable(
+                      onTap: () => AddToTripModal.show(context, attraction),
+                      child: ElevatedButton.icon(
+                        onPressed: () => AddToTripModal.show(context, attraction),
+                        icon: const Icon(Icons.add_circle_outline_rounded),
+                        label: Text(loc.translate('addToTrip')),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(52),
+                          backgroundColor: AppColors.primaryPurple,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -220,11 +286,18 @@ class AttractionDetailScreen extends StatelessWidget {
 
   Widget _infoCard({required IconData icon, required String label, required String value, bool isPrice = false}) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.borderLight),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -234,7 +307,7 @@ class AttractionDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 11, color: AppColors.mediumGray)),
+                Text(label, style: const TextStyle(fontSize: 11, color: AppColors.mediumGray, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 2),
                 Text(
                   value,

@@ -6,6 +6,8 @@ import '../../models/models.dart';
 import '../../services/itinerary_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/app_motion.dart';
+import '../../widgets/apple_touchable.dart';
 import '../../widgets/network_image_with_fallback.dart';
 import '../../widgets/glassmorphic_container.dart';
 import '../navigation_shell.dart';
@@ -24,10 +26,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
   late ScrollController _scrollController;
 
   bool _showHeaderLogo = false;
-  int _step = 0; // 0: Welcome & Lang, 1: Quiz
+  int _step = 0;
   String _selectedStyle = 'History & Culture';
   String _selectedBudget = 'Moderate';
-  int _selectedDaysCount = 3; // Default 3 free days
+  int _selectedDaysCount = 3;
 
   @override
   void initState() {
@@ -43,20 +45,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
 
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: AppDurations.medium,
     );
 
     _fadeAnim = CurvedAnimation(
       parent: _animController,
-      curve: Curves.easeOut,
+      curve: AppCurves.fadeEntrance,
     );
 
     _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.1),
+      begin: const Offset(0, 0.08),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _animController,
-      curve: Curves.easeOutCubic,
+      curve: AppCurves.springSnappy,
     ));
 
     _animController.forward();
@@ -95,12 +97,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Responsive Full-Screen Egyptian Destination Photo (100% Clear View)
+          // Full-Screen Egyptian Destination Photo
           Positioned.fill(
             child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 600),
-              switchInCurve: Curves.easeInOut,
-              switchOutCurve: Curves.easeInOut,
+              duration: AppDurations.medium,
+              switchInCurve: AppCurves.appleEase,
+              switchOutCurve: AppCurves.appleEase,
               child: SizedBox(
                 width: screenSize.width,
                 height: screenSize.height,
@@ -114,7 +116,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
             ),
           ),
 
-          // Clean Subtle Dark Vignette Overlay (Zero Purple Tint for Maximum Clarity)
+          // Clean Subtle Dark Vignette Overlay
           Container(
             width: screenSize.width,
             height: screenSize.height,
@@ -142,6 +144,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       return SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
                         controller: _scrollController,
                         child: ConstrainedBox(
                           constraints: BoxConstraints(minHeight: constraints.maxHeight),
@@ -149,7 +152,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                // Top Header Bar with Logo Without Text (Symbol Mark) & Language Switcher
+                                // Header Bar
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
@@ -165,17 +168,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                                       padding: EdgeInsets.zero,
                                       borderRadius: BorderRadius.circular(20),
                                       tintColor: Colors.white.withValues(alpha: 0.12),
-                                      child: TextButton.icon(
-                                        onPressed: () {
+                                      child: AppleTouchable(
+                                        onTap: () {
                                           final next = appProvider.isArabic
                                               ? const Locale('en')
                                               : const Locale('ar');
                                           appProvider.setLocale(next);
                                         },
-                                        icon: const Icon(Icons.language_rounded, color: Colors.white, size: 18),
-                                        label: Text(
-                                          appProvider.isArabic ? 'English' : 'العربية',
-                                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.language_rounded, color: Colors.white, size: 18),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                appProvider.isArabic ? 'English' : 'العربية',
+                                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -185,9 +197,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
 
                                 // Animated Step Transition
                                 AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 400),
-                                  switchInCurve: Curves.easeOutCubic,
-                                  switchOutCurve: Curves.easeInCubic,
+                                  duration: AppDurations.medium,
+                                  switchInCurve: AppCurves.springSnappy,
+                                  switchOutCurve: AppCurves.appleEase,
                                   child: _step == 0
                                       ? _buildWelcomeStep0(loc, appProvider)
                                       : _buildQuizStep1(loc, appProvider, isAr),
@@ -213,7 +225,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
       key: const ValueKey(0),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Welcome Card with Full Official Transparent Logo above Welcome to Egypt
         GlassContainer(
           blurSigma: 15,
           tintColor: Colors.black.withValues(alpha: 0.35),
@@ -243,7 +254,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
-                  letterSpacing: 0.5,
+                  letterSpacing: -0.3,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -252,7 +263,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                 loc.translate('tagline'),
                 style: const TextStyle(
                   fontSize: 14,
-                  color: AppColors.desertSand,
+                  color: AppColors.lightPurple,
                   fontStyle: FontStyle.italic,
                   height: 1.4,
                 ),
@@ -263,7 +274,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         ),
         const SizedBox(height: 20),
 
-        // Dual Promise Cards
         _buildPromiseCard(
           title: loc.translate('hndlkTitle'),
           subtitle: loc.translate('hndlkSubtitle'),
@@ -275,29 +285,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
           title: loc.translate('hnhndlkTitle'),
           subtitle: loc.translate('hnhndlkSubtitle'),
           icon: Icons.auto_awesome_rounded,
-          color: AppColors.terracotta,
+          color: AppColors.primaryOrange,
         ),
         const SizedBox(height: 28),
 
-        ElevatedButton(
-          onPressed: () {
+        AppleTouchable(
+          onTap: () {
             setState(() {
               _step = 1;
               _animController.reset();
               _animController.forward();
             });
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryOrange,
-            foregroundColor: Colors.white,
-            elevation: 4,
-            shadowColor: AppColors.primaryOrange.withValues(alpha: 0.4),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ),
-          child: Text(
-            loc.translate('getStarted'),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          child: ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _step = 1;
+                _animController.reset();
+                _animController.forward();
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryOrange,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              shadowColor: AppColors.primaryOrange.withValues(alpha: 0.4),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            child: Text(
+              loc.translate('getStarted'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
       ],
@@ -314,7 +333,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: AppColors.lightPurple, // Purple Title #EDE5FF
+            color: AppColors.lightPurple,
+            letterSpacing: -0.3,
           ),
         ),
         const SizedBox(height: 8),
@@ -324,7 +344,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         ),
         const SizedBox(height: 20),
 
-        // Free Trip Days Question Heading in Purple (#EDE5FF)
         Text(
           isAr ? 'كم عدد الأيام المتاحة لرحلتك؟' : 'How many free days for your trip?',
           style: const TextStyle(fontSize: 16, color: AppColors.lightPurple, fontWeight: FontWeight.bold),
@@ -344,7 +363,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         ),
         const SizedBox(height: 20),
 
-        // Style Selector Question Heading in Purple (#EDE5FF)
         Text(
           loc.translate('travelStyle'),
           style: const TextStyle(fontSize: 16, color: AppColors.lightPurple, fontWeight: FontWeight.bold),
@@ -368,7 +386,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         ),
         const SizedBox(height: 20),
 
-        // Budget Selector Question Heading in Purple (#EDE5FF)
         Text(
           loc.translate('budgetTier'),
           style: const TextStyle(fontSize: 16, color: AppColors.lightPurple, fontWeight: FontWeight.bold),
@@ -387,33 +404,43 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
         ),
         const SizedBox(height: 28),
 
-        // Action Button in Primary Purple (#4300C8)
-        ElevatedButton(
-          onPressed: () => _showTravelersSelectionModal(context, appProvider, loc),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryPurple, // Deep Purple #4300C8
-            foregroundColor: Colors.white,
-            elevation: 4,
-            shadowColor: AppColors.primaryPurple.withValues(alpha: 0.4),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ),
-          child: Text(
-            loc.translate('startPlanning'),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        AppleTouchable(
+          onTap: () => _showTravelersSelectionModal(context, appProvider, loc),
+          child: ElevatedButton(
+            onPressed: () => _showTravelersSelectionModal(context, appProvider, loc),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryPurple,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              shadowColor: AppColors.primaryPurple.withValues(alpha: 0.4),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            child: Text(
+              loc.translate('startPlanning'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
         const SizedBox(height: 8),
-        TextButton(
-          onPressed: () {
+        AppleTouchable(
+          onTap: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const NavigationShell()),
+              AppCupertinoPageRoute(page: const NavigationShell()),
             );
           },
-          child: Text(
-            loc.translate('skipQuiz'),
-            style: const TextStyle(color: AppColors.desertSand),
+          child: TextButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                AppCupertinoPageRoute(page: const NavigationShell()),
+              );
+            },
+            child: Text(
+              loc.translate('skipQuiz'),
+              style: const TextStyle(color: AppColors.lightPurple, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
       ],
@@ -421,7 +448,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
   }
 
   void _showTravelersSelectionModal(BuildContext context, AppProvider appProvider, AppLocalizations loc) {
-    int tempTravelers = 2; // Default 2 travelers
+    int tempTravelers = 2;
     final isAr = appProvider.isArabic;
 
     showModalBottomSheet(
@@ -460,7 +487,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                       Expanded(
                         child: Text(
                           isAr ? 'كم عدد المسافرين في هذه الرحلة؟' : 'How many travelers are joining?',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primaryPurple),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primaryPurple, letterSpacing: -0.3),
                         ),
                       ),
                     ],
@@ -468,17 +495,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                   const SizedBox(height: 8),
                   Text(
                     isAr ? 'اختر عدد الأشخاص لحساب التكاليف وتجهيز التذاكر بإنسب سعر.' : 'Choose the number of travelers to calculate total entry fees and arrangements.',
-                    style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                    style: const TextStyle(color: AppColors.mediumGray, fontSize: 13),
                   ),
                   const SizedBox(height: 20),
 
-                  // Traveler Count Selection Chips in Vibrant Orange (#FF5008)
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
-                    children: [
-                      1, 2, 3, 4, 5, 6
-                    ].map((count) {
+                    children: [1, 2, 3, 4, 5, 6].map((count) {
                       final isSel = tempTravelers == count;
                       final label = count == 1
                           ? (isAr ? '1 مسافر منفرد' : '1 Solo')
@@ -486,33 +510,43 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                               ? (isAr ? '2 مسافران (زوجين)' : '2 Pair / Couple')
                               : '$count ${isAr ? 'مسافرين' : 'Travelers'}';
 
-                      return ChoiceChip(
-                        label: Text(label),
-                        selected: isSel,
-                        selectedColor: AppColors.primaryOrange, // Vibrant Orange #FF5008
-                        backgroundColor: AppColors.desertSand,
-                        checkmarkColor: Colors.white,
-                        labelStyle: TextStyle(
-                          color: isSel ? Colors.white : AppColors.charcoal,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                      return AppleTouchable(
+                        pressedScale: 0.92,
+                        onTap: () => setModalState(() => tempTravelers = count),
+                        child: ChoiceChip(
+                          label: Text(label),
+                          selected: isSel,
+                          onSelected: null,
+                          selectedColor: AppColors.primaryOrange,
+                          backgroundColor: AppColors.lightPurple,
+                          checkmarkColor: Colors.white,
+                          labelStyle: TextStyle(
+                            color: isSel ? Colors.white : AppColors.darkGray,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
                         ),
-                        onSelected: (_) => setModalState(() => tempTravelers = count),
                       );
                     }).toList(),
                   ),
                   const SizedBox(height: 28),
 
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context); // Close modal
+                  AppleTouchable(
+                    onTap: () {
+                      Navigator.pop(context);
                       _generateTripWithParams(appProvider, loc, tempTravelers);
                     },
-                    icon: const Icon(Icons.check_circle_outline_rounded),
-                    label: Text(isAr ? 'تأكيد وإنشاء الرحلة المنهندلة' : 'Confirm & Generate Handled Trip'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(52),
-                      backgroundColor: AppColors.primaryPurple,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _generateTripWithParams(appProvider, loc, tempTravelers);
+                      },
+                      icon: const Icon(Icons.check_circle_outline_rounded),
+                      label: Text(isAr ? 'تأكيد وإنشاء الرحلة المنهندلة' : 'Confirm & Generate Handled Trip'),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(52),
+                        backgroundColor: AppColors.primaryPurple,
+                      ),
                     ),
                   ),
                 ],
@@ -565,34 +599,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
       destinationId: destinationId,
       attractionIds: attractionIds,
       startDate: DateTime.now().add(const Duration(days: 7)),
-      daysCount: _selectedDaysCount, // Use selected free days
-      travelerCount: travelerCount,   // Use selected travelers count from popup menu!
+      daysCount: _selectedDaysCount,
+      travelerCount: travelerCount,
     );
 
     appProvider.addTrip(trip);
 
-    // Navigate to My Trips tab directly with the generated trip
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (_) => const NavigationShell(initialIndex: 3),
+      AppCupertinoPageRoute(
+        page: const NavigationShell(initialIndex: 3),
       ),
     );
   }
 
-  // Answer Options Chips in Vibrant Logo Orange (#FF5008)
   Widget _buildCustomChip({
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return AppleTouchable(
+      pressedScale: 0.92,
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: AppDurations.ultraFast,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryOrange : Colors.black.withValues(alpha: 0.30), // Vibrant Orange #FF5008
+          color: isSelected ? AppColors.primaryOrange : Colors.black.withValues(alpha: 0.30),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? AppColors.primaryOrange : Colors.white.withValues(alpha: 0.35),
@@ -618,7 +651,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
             Text(
               label,
               style: const TextStyle(
-                color: Colors.white, // Crisp white text always
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),

@@ -1,9 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_motion.dart';
+import '../widgets/apple_touchable.dart';
 import 'home/home_screen.dart';
 import 'explore/explore_screen.dart';
 import 'planner/ai_assistant_screen.dart';
@@ -35,8 +38,8 @@ class _NavigationShellState extends State<NavigationShell> {
 
     final screens = [
       HomeScreen(
-        onExploreTap: () => setState(() => _currentIndex = 1),
-        onPlannerTap: () => setState(() => _currentIndex = 2),
+        onExploreTap: () => _onTabChanged(1),
+        onPlannerTap: () => _onTabChanged(2),
       ),
       const ExploreScreen(),
       const AiAssistantScreen(),
@@ -77,9 +80,28 @@ class _NavigationShellState extends State<NavigationShell> {
       extendBody: true, // Content flows seamlessly under the glassmorphic bar
       body: Directionality(
         textDirection: appProvider.isArabic ? TextDirection.rtl : TextDirection.ltr,
-        child: IndexedStack(
-          index: _currentIndex,
-          children: screens,
+        child: AnimatedSwitcher(
+          duration: AppDurations.medium,
+          switchInCurve: AppCurves.appleEase,
+          switchOutCurve: AppCurves.appleEase,
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 0.98, end: 1.0).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: AppCurves.springSnappy,
+                  ),
+                ),
+                child: child,
+              ),
+            );
+          },
+          child: KeyedSubtree(
+            key: ValueKey<int>(_currentIndex),
+            child: screens[_currentIndex],
+          ),
         ),
       ),
       bottomNavigationBar: SafeArea(
@@ -91,14 +113,14 @@ class _NavigationShellState extends State<NavigationShell> {
               borderRadius: BorderRadius.circular(36),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryPurple.withValues(alpha: 0.25),
-                  blurRadius: 24,
+                  color: AppColors.primaryPurple.withValues(alpha: 0.22),
+                  blurRadius: 28,
                   spreadRadius: 2,
                   offset: const Offset(0, 10),
                 ),
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 12,
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 14,
                   offset: const Offset(0, 4),
                 ),
               ],
@@ -106,10 +128,10 @@ class _NavigationShellState extends State<NavigationShell> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(36),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.primaryPurple.withValues(alpha: 0.88),
+                    color: AppColors.primaryPurple.withValues(alpha: 0.86),
                     borderRadius: BorderRadius.circular(36),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.25),
@@ -122,26 +144,25 @@ class _NavigationShellState extends State<NavigationShell> {
                       final item = navItems[index];
                       final isSelected = _currentIndex == index;
 
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() => _currentIndex = index);
-                        },
-                        behavior: HitTestBehavior.opaque,
+                      return AppleTouchable(
+                        enableHaptics: false, // Custom haptics handled in _onTabChanged
+                        onTap: () => _onTabChanged(index),
+                        pressedScale: 0.90,
                         child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeOutCubic,
+                          duration: AppDurations.medium,
+                          curve: AppCurves.springSnappy,
                           padding: EdgeInsets.symmetric(
                             horizontal: isSelected ? 16 : 10,
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: isSelected ? AppColors.primaryOrange : Colors.transparent, // All active tabs highlight in vibrant Handelak Orange (#FF5008)
+                            color: isSelected ? AppColors.primaryOrange : Colors.transparent,
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: AppColors.primaryOrange.withValues(alpha: 0.40),
-                                      blurRadius: 10,
+                                      color: AppColors.primaryOrange.withValues(alpha: 0.45),
+                                      blurRadius: 12,
                                       offset: const Offset(0, 4),
                                     ),
                                   ]
@@ -152,8 +173,8 @@ class _NavigationShellState extends State<NavigationShell> {
                             children: [
                               AnimatedScale(
                                 scale: isSelected ? 1.15 : 1.0,
-                                duration: const Duration(milliseconds: 250),
-                                curve: Curves.easeOutBack,
+                                duration: AppDurations.fast,
+                                curve: AppCurves.springBouncy,
                                 child: Icon(
                                   isSelected ? item.activeIcon : item.icon,
                                   color: isSelected ? Colors.white : Colors.white70,
@@ -163,14 +184,15 @@ class _NavigationShellState extends State<NavigationShell> {
                               if (isSelected) ...[
                                 const SizedBox(width: 8),
                                 AnimatedOpacity(
-                                  duration: const Duration(milliseconds: 200),
+                                  duration: AppDurations.fast,
                                   opacity: isSelected ? 1.0 : 0.0,
                                   child: Text(
                                     loc.translate(item.labelKey),
                                     style: const TextStyle(
-                                      color: Colors.white, // Crisp white text on active orange shape
+                                      color: Colors.white,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 13,
+                                      letterSpacing: -0.2,
                                     ),
                                   ),
                                 ),
@@ -188,6 +210,13 @@ class _NavigationShellState extends State<NavigationShell> {
         ),
       ),
     );
+  }
+
+  void _onTabChanged(int index) {
+    if (_currentIndex != index) {
+      HapticFeedback.selectionClick();
+      setState(() => _currentIndex = index);
+    }
   }
 }
 

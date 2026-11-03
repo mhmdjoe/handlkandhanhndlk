@@ -1,3 +1,5 @@
+import '../data/tourism_database.dart';
+
 enum CategoryType {
   archaeology,
   museum,
@@ -325,6 +327,7 @@ class Trip {
   final int travelerCount;
   final String? selectedHotelId;
   final String hotelBudgetTier; // "Budget", "Moderate", "Luxury", "Eco Lodge"
+  final String? customImageUrl;
 
   Trip({
     required this.id,
@@ -340,7 +343,58 @@ class Trip {
     this.travelerCount = 1,
     this.selectedHotelId,
     this.hotelBudgetTier = 'Moderate',
+    this.customImageUrl,
   });
+
+  /// Dynamic cover image relative to trip title & main attraction highlight
+  String get coverImageUrl {
+    if (customImageUrl != null && customImageUrl!.isNotEmpty) {
+      return customImageUrl!;
+    }
+
+    final t = title.toLowerCase();
+    if (t.contains('dolphin') || t.contains('دلفين') || t.contains('دلافين') || t.contains('sataya')) {
+      return TourismDatabase.attractions.firstWhere((a) => a.id == 'sataya_dolphin_reef', orElse: () => TourismDatabase.attractions[0]).imageUrl;
+    }
+    if (t.contains('diving') || t.contains('sea') || t.contains('beach') || t.contains('غوص') || t.contains('بحر') || t.contains('شاطئ') || t.contains('giftun') || t.contains('orange bay')) {
+      return TourismDatabase.attractions.firstWhere((a) => a.id == 'giftun_island', orElse: () => TourismDatabase.attractions[0]).imageUrl;
+    }
+    if (t.contains('salt') || t.contains('siwa') || t.contains('سيوة') || t.contains('ملح')) {
+      return TourismDatabase.attractions.firstWhere((a) => a.id == 'siwa_shali', orElse: () => TourismDatabase.attractions[0]).imageUrl;
+    }
+    if (t.contains('desert') || t.contains('safari') || t.contains('صحراء') || t.contains('سفاري') || t.contains('white desert')) {
+      return TourismDatabase.attractions.firstWhere((a) => a.id == 'white_desert_park', orElse: () => TourismDatabase.attractions[0]).imageUrl;
+    }
+    if (t.contains('balloon') || t.contains('بالون') || t.contains('طائر')) {
+      return TourismDatabase.attractions.firstWhere((a) => a.id == 'luxor_hot_air_balloon', orElse: () => TourismDatabase.attractions[0]).imageUrl;
+    }
+    if (t.contains('pyramid') || t.contains('أهرامات') || t.contains('sphinx') || t.contains('giza')) {
+      return TourismDatabase.attractions.firstWhere((a) => a.id == 'giza_pyramids', orElse: () => TourismDatabase.attractions[0]).imageUrl;
+    }
+    if (t.contains('museum') || t.contains('متحف') || t.contains('gem') || t.contains('mummies')) {
+      return TourismDatabase.attractions.firstWhere((a) => a.id == 'gem_museum', orElse: () => TourismDatabase.attractions[0]).imageUrl;
+    }
+    if (t.contains('abu simbel') || t.contains('أبو سمبل')) {
+      return TourismDatabase.attractions.firstWhere((a) => a.id == 'abu_simbel', orElse: () => TourismDatabase.attractions[0]).imageUrl;
+    }
+    if (t.contains('fayoum') || t.contains('فيوم') || t.contains('magic lake')) {
+      return TourismDatabase.attractions.firstWhere((a) => a.id == 'magic_lake_fayoum', orElse: () => TourismDatabase.attractions[0]).imageUrl;
+    }
+
+    if (items.isNotEmpty) {
+      final firstAttraction = TourismDatabase.attractions.firstWhere(
+        (a) => a.id == items.first.attractionId,
+        orElse: () => TourismDatabase.attractions.first,
+      );
+      return firstAttraction.imageUrl;
+    }
+
+    final dest = TourismDatabase.destinations.firstWhere(
+      (d) => d.id == destinationId,
+      orElse: () => TourismDatabase.destinations.first,
+    );
+    return dest.imageUrl;
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -356,6 +410,7 @@ class Trip {
     'travelerCount': travelerCount,
     'selectedHotelId': selectedHotelId,
     'hotelBudgetTier': hotelBudgetTier,
+    'customImageUrl': customImageUrl,
   };
 
   factory Trip.fromJson(Map<String, dynamic> json) => Trip(
@@ -372,6 +427,7 @@ class Trip {
     travelerCount: json['travelerCount'] ?? 1,
     selectedHotelId: json['selectedHotelId'],
     hotelBudgetTier: json['hotelBudgetTier'] ?? 'Moderate',
+    customImageUrl: json['customImageUrl'],
   );
 }
 

@@ -6,6 +6,8 @@ import '../../providers/app_provider.dart';
 import '../../services/itinerary_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/app_motion.dart';
+import '../../widgets/apple_touchable.dart';
 import '../../widgets/network_image_with_fallback.dart';
 import '../explore/attraction_detail_screen.dart';
 
@@ -20,7 +22,7 @@ class ItineraryDetailScreen extends StatefulWidget {
 
 class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
   late Trip _currentTrip;
-  bool _isWholeTripView = true; // Default to showing the Whole Trip
+  bool _isWholeTripView = true;
   int _selectedDay = 1;
   late String _selectedHotelBudget;
   late DateTime _selectedStartDate;
@@ -49,19 +51,17 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
 
     final isNoHotel = _selectedHotelBudget == 'No Hotel Needed';
 
-    // Filter hotels matching budget or destination
     final matchingHotels = TourismDatabase.hotels.where((h) {
       if (_selectedHotelBudget == 'Luxury') return h.starRating == 5;
       if (_selectedHotelBudget == 'Budget') return h.starRating <= 3 || h.pricePerNightUsd < 100;
       if (_selectedHotelBudget == 'Eco Lodge') return h.amenities.contains('Eco Lodge') || h.starRating >= 4;
-      return h.starRating >= 4; // Moderate
+      return h.starRating >= 4;
     }).toList();
 
     final selectedHotel = _currentTrip.selectedHotelId != null
         ? TourismDatabase.hotels.firstWhere((h) => h.id == _currentTrip.selectedHotelId, orElse: () => matchingHotels.first)
         : (matchingHotels.isNotEmpty ? matchingHotels.first : TourismDatabase.hotels.first);
 
-    // Calculate total cost including hotel stay (or 0 if No Hotel Needed)
     final hotelTotalEgp = isNoHotel ? 0.0 : (selectedHotel.pricePerNightEgp * totalDays);
     final hotelTotalUsd = isNoHotel ? 0.0 : (selectedHotel.pricePerNightUsd * totalDays);
     final grandTotalEgp = _currentTrip.totalCostEgp + hotelTotalEgp;
@@ -71,98 +71,145 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
       appBar: AppBar(
         title: Text(_currentTrip.title),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.share_outlined),
-            onPressed: () {
+          AppleTouchable(
+            onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(isAr ? 'تم نسخ رابط الرحلة لمشاركته بالكامل!' : 'Whole trip itinerary copied!'),
                 ),
               );
             },
+            child: const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Icon(Icons.share_outlined, color: AppColors.primaryPurple),
+            ),
           ),
-          // Delete Trip Button
-          IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
-            onPressed: () => _showDeleteTripConfirmation(context, provider, isAr),
+          AppleTouchable(
+            onTap: () => _showDeleteTripConfirmation(context, provider, isAr),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+            ),
           ),
         ],
       ),
       body: Column(
         children: [
-          // Total Budget & Date Booking Banner
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: AppColors.nileTeal,
-            child: Column(
-              children: [
-                Row(
+          // Hero Cover Image & Total Budget Booking Banner
+          Stack(
+            children: [
+              SafeNetworkImage(
+                imageUrl: _currentTrip.coverImageUrl,
+                height: 175,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+              Container(
+                height: 175,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withValues(alpha: 0.85),
+                      Colors.black.withValues(alpha: 0.40),
+                      Colors.black.withValues(alpha: 0.85),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 16,
+                right: 16,
+                top: 14,
+                bottom: 14,
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          loc.translate('estimatedCost'),
-                          style: const TextStyle(color: AppColors.desertSand, fontSize: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              loc.translate('estimatedCost'),
+                              style: const TextStyle(color: AppColors.lightPurple, fontSize: 12, fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              provider.formatPrice(grandTotalEgp, grandTotalUsd),
+                              style: const TextStyle(color: AppColors.papyrusGold, fontSize: 22, fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          provider.formatPrice(grandTotalEgp, grandTotalUsd),
-                          style: const TextStyle(color: AppColors.papyrusGold, fontSize: 20, fontWeight: FontWeight.bold),
+
+                        // Date Picker Trigger Button
+                        AppleTouchable(
+                          pressedScale: 0.92,
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: _selectedStartDate,
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime.now().add(const Duration(days: 365)),
+                            );
+                            if (picked != null) {
+                              setState(() => _selectedStartDate = picked);
+                            }
+                          },
+                          child: OutlinedButton.icon(
+                            onPressed: null,
+                            icon: const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.papyrusGold),
+                            label: Text(
+                              '${_selectedStartDate.day}/${_selectedStartDate.month}/${_selectedStartDate.year}',
+                              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: AppColors.papyrusGold),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            ),
+                          ),
                         ),
                       ],
                     ),
 
-                    // Date Picker Trigger Button
-                    OutlinedButton.icon(
-                      onPressed: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: _selectedStartDate,
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
-                        );
-                        if (picked != null) {
-                          setState(() => _selectedStartDate = picked);
-                        }
-                      },
-                      icon: const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.papyrusGold),
-                      label: Text(
-                        '${_selectedStartDate.day}/${_selectedStartDate.month}/${_selectedStartDate.year}',
-                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                    // Confirm & Book Journey Button
+                    AppleTouchable(
+                      onTap: () => _showBookingConfirmationModal(
+                        context,
+                        provider,
+                        isAr,
+                        grandTotalEgp,
+                        grandTotalUsd,
+                        selectedHotel,
+                        totalDays,
+                        isNoHotel,
                       ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: AppColors.papyrusGold),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      child: ElevatedButton.icon(
+                        onPressed: () => _showBookingConfirmationModal(
+                          context,
+                          provider,
+                          isAr,
+                          grandTotalEgp,
+                          grandTotalUsd,
+                          selectedHotel,
+                          totalDays,
+                          isNoHotel,
+                        ),
+                        icon: const Icon(Icons.check_circle_outline_rounded),
+                        label: Text(isAr ? 'تأكيد وحجز الرحلة الآن' : 'Book & Reserve Journey Now'),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(42),
+                          backgroundColor: AppColors.papyrusGold,
+                          foregroundColor: AppColors.primaryPurple,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-
-                // Confirm & Book Journey Button
-                ElevatedButton.icon(
-                  onPressed: () => _showBookingConfirmationModal(
-                    context,
-                    provider,
-                    isAr,
-                    grandTotalEgp,
-                    grandTotalUsd,
-                    selectedHotel,
-                    totalDays,
-                    isNoHotel,
-                  ),
-                  icon: const Icon(Icons.check_circle_outline_rounded),
-                  label: Text(isAr ? 'تأكيد وحجز الرحلة الآن' : 'Book & Reserve Journey Now'),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(44),
-                    backgroundColor: AppColors.papyrusGold,
-                    foregroundColor: AppColors.nileTeal,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
 
           // Conflicts Warning Banner
@@ -190,28 +237,38 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: ChoiceChip(
-                    label: Center(child: Text(isAr ? 'الرحلة بالكامل ($totalDays أيام)' : 'Whole Trip ($totalDays Days)')),
-                    selected: _isWholeTripView,
-                    selectedColor: AppColors.nileTeal,
-                    labelStyle: TextStyle(
-                      color: _isWholeTripView ? Colors.white : AppColors.charcoal,
-                      fontWeight: FontWeight.bold,
+                  child: AppleTouchable(
+                    pressedScale: 0.95,
+                    onTap: () => setState(() => _isWholeTripView = true),
+                    child: ChoiceChip(
+                      label: Center(child: Text(isAr ? 'الرحلة بالكامل ($totalDays أيام)' : 'Whole Trip ($totalDays Days)')),
+                      selected: _isWholeTripView,
+                      onSelected: null,
+                      selectedColor: AppColors.primaryPurple,
+                      backgroundColor: AppColors.lightPurple,
+                      labelStyle: TextStyle(
+                        color: _isWholeTripView ? Colors.white : AppColors.darkGray,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    onSelected: (_) => setState(() => _isWholeTripView = true),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: ChoiceChip(
-                    label: Center(child: Text(isAr ? 'حسب اليوم' : 'Day-by-Day')),
-                    selected: !_isWholeTripView,
-                    selectedColor: AppColors.papyrusGold,
-                    labelStyle: TextStyle(
-                      color: !_isWholeTripView ? AppColors.nileTeal : AppColors.charcoal,
-                      fontWeight: FontWeight.bold,
+                  child: AppleTouchable(
+                    pressedScale: 0.95,
+                    onTap: () => setState(() => _isWholeTripView = false),
+                    child: ChoiceChip(
+                      label: Center(child: Text(isAr ? 'حسب اليوم' : 'Day-by-Day')),
+                      selected: !_isWholeTripView,
+                      onSelected: null,
+                      selectedColor: AppColors.primaryOrange,
+                      backgroundColor: AppColors.lightPurple,
+                      labelStyle: TextStyle(
+                        color: !_isWholeTripView ? Colors.white : AppColors.darkGray,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    onSelected: (_) => setState(() => _isWholeTripView = false),
                   ),
                 ),
               ],
@@ -223,6 +280,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
             SizedBox(
               height: 48,
               child: ListView.builder(
+                physics: const BouncingScrollPhysics(),
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: totalDays,
@@ -231,11 +289,20 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                   final isSel = _selectedDay == dayNum;
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text('${loc.translate('day')} $dayNum'),
-                      selected: isSel,
-                      selectedColor: AppColors.papyrusGold,
-                      onSelected: (_) => setState(() => _selectedDay = dayNum),
+                    child: AppleTouchable(
+                      pressedScale: 0.92,
+                      onTap: () => setState(() => _selectedDay = dayNum),
+                      child: ChoiceChip(
+                        label: Text('${loc.translate('day')} $dayNum'),
+                        selected: isSel,
+                        onSelected: null,
+                        selectedColor: AppColors.primaryOrange,
+                        backgroundColor: AppColors.lightPurple,
+                        labelStyle: TextStyle(
+                          color: isSel ? Colors.white : AppColors.darkGray,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   );
                 },
@@ -251,6 +318,313 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildWholeTripListView(
+    BuildContext context,
+    AppProvider provider,
+    bool isAr,
+    int daysCount,
+    Destination destination,
+    Hotel selectedHotel,
+    int totalDays,
+  ) {
+    return ListView(
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 110),
+      children: [
+        // Hotel Accommodation Selector Card
+        Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: AppColors.borderLight),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      isAr ? 'خيار الإقامة والفندق' : 'Hotel Accommodation',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primaryPurple),
+                    ),
+                    DropdownButton<String>(
+                      value: _selectedHotelBudget,
+                      items: ['Moderate', 'Luxury', 'Budget', 'Eco Lodge', 'No Hotel Needed'].map((tier) {
+                        return DropdownMenuItem(
+                          value: tier,
+                          child: Text(tier, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _selectedHotelBudget = val);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (_selectedHotelBudget != 'No Hotel Needed') ...[
+                  Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: SafeNetworkImage(
+                          imageUrl: selectedHotel.imageUrl,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isAr ? selectedHotel.nameAr : selectedHotel.nameEn,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '${selectedHotel.starRating} Stars • ${isAr ? selectedHotel.cityAr : selectedHotel.cityEn}',
+                              style: const TextStyle(color: AppColors.mediumGray, fontSize: 12),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${provider.formatPrice(selectedHotel.pricePerNightEgp, selectedHotel.pricePerNightUsd)} / night',
+                              style: const TextStyle(color: AppColors.primaryOrange, fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // List of Day Blocks
+        ...List.generate(daysCount, (dayIndex) {
+          final dayNum = dayIndex + 1;
+          final dayItems = _currentTrip.items.where((item) => item.dayNumber == dayNum).toList();
+
+          return StaggeredEntranceItem(
+            index: dayIndex,
+            child: Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${isAr ? 'اليوم' : 'Day'} $dayNum',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryPurple, letterSpacing: -0.3),
+                    ),
+                    const Divider(height: 20),
+
+                    if (dayItems.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          isAr ? 'لا توجد أنشطة مجدولة لهذا اليوم.' : 'No activities scheduled for this day.',
+                          style: const TextStyle(color: AppColors.mediumGray, fontStyle: FontStyle.italic),
+                        ),
+                      )
+                    else
+                      ...dayItems.map((item) {
+                        final attraction = TourismDatabase.attractions.firstWhere(
+                          (a) => a.id == item.attractionId,
+                          orElse: () => TourismDatabase.attractions.first,
+                        );
+
+                        return AppleTouchable(
+                          pressedScale: 0.97,
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              AppCupertinoPageRoute(
+                                page: AttractionDetailScreen(attraction: attraction),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceMuted,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: SafeNetworkImage(
+                                    imageUrl: attraction.imageUrl,
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        isAr ? attraction.nameAr : attraction.nameEn,
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '${item.startTime} • ${provider.formatPrice(attraction.priceEgp, attraction.priceUsd)}',
+                                        style: const TextStyle(color: AppColors.mediumGray, fontSize: 12, fontWeight: FontWeight.w500),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                AppleTouchable(
+                                  pressedScale: 0.85,
+                                  onTap: () => _removeItem(item.id, provider),
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(4),
+                                    child: Icon(Icons.remove_circle_outline_rounded, color: Colors.redAccent, size: 22),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildDayItemsListView(BuildContext context, AppProvider provider, bool isAr, int dayNum) {
+    final dayItems = _currentTrip.items.where((item) => item.dayNumber == dayNum).toList();
+
+    return ListView.builder(
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 110),
+      itemCount: dayItems.length,
+      itemBuilder: (context, index) {
+        final item = dayItems[index];
+        final attraction = TourismDatabase.attractions.firstWhere(
+          (a) => a.id == item.attractionId,
+          orElse: () => TourismDatabase.attractions.first,
+        );
+
+        return StaggeredEntranceItem(
+          index: index,
+          child: AppleTouchable(
+            pressedScale: 0.97,
+            borderRadius: BorderRadius.circular(20),
+            onTap: () {
+              Navigator.push(
+                context,
+                AppCupertinoPageRoute(
+                  page: AttractionDetailScreen(attraction: attraction),
+                ),
+              );
+            },
+            child: Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: SafeNetworkImage(
+                        imageUrl: attraction.imageUrl,
+                        width: 75,
+                        height: 75,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isAr ? attraction.nameAr : attraction.nameEn,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: -0.2),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${item.startTime} • ${provider.formatPrice(attraction.priceEgp, attraction.priceUsd)}',
+                            style: const TextStyle(color: AppColors.primaryOrange, fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                    AppleTouchable(
+                      pressedScale: 0.85,
+                      onTap: () => _removeItem(item.id, provider),
+                      child: const Padding(
+                        padding: EdgeInsets.all(6),
+                        child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 24),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _removeItem(String itemId, AppProvider provider) {
+    final updatedItems = _currentTrip.items.where((i) => i.id != itemId).toList();
+    double totalEgp = 0;
+    double totalUsd = 0;
+    for (var item in updatedItems) {
+      final a = TourismDatabase.attractions.firstWhere((att) => att.id == item.attractionId);
+      totalEgp += a.priceEgp;
+      totalUsd += a.priceUsd;
+    }
+
+    final updatedTrip = Trip(
+      id: _currentTrip.id,
+      title: _currentTrip.title,
+      destinationId: _currentTrip.destinationId,
+      startDate: _currentTrip.startDate,
+      endDate: _currentTrip.endDate,
+      daysCount: _currentTrip.daysCount,
+      travelerCount: _currentTrip.travelerCount,
+      status: _currentTrip.status,
+      hotelBudgetTier: _currentTrip.hotelBudgetTier,
+      selectedHotelId: _currentTrip.selectedHotelId,
+      items: updatedItems,
+      totalCostEgp: totalEgp,
+      totalCostUsd: totalUsd,
+    );
+
+    provider.updateTrip(updatedTrip);
+    setState(() => _currentTrip = updatedTrip);
   }
 
   void _showDeleteTripConfirmation(BuildContext context, AppProvider provider, bool isAr) {
@@ -269,14 +643,21 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
               onPressed: () => Navigator.pop(context),
               child: Text(isAr ? 'إلغاء' : 'Cancel'),
             ),
-            ElevatedButton(
-              onPressed: () {
+            AppleTouchable(
+              onTap: () {
                 provider.removeTrip(_currentTrip.id);
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context); // Return to MyTripsScreen
+                Navigator.pop(context);
+                Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-              child: Text(isAr ? 'حذف الرحلة' : 'Delete Trip'),
+              child: ElevatedButton(
+                onPressed: () {
+                  provider.removeTrip(_currentTrip.id);
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                child: Text(isAr ? 'حذف الرحلة' : 'Delete Trip'),
+              ),
             ),
           ],
         );
@@ -296,7 +677,6 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
   ) {
     final endDate = _selectedStartDate.add(Duration(days: tripDays));
 
-    // Update trip status to confirmed
     final updatedTrip = Trip(
       id: _currentTrip.id,
       title: _currentTrip.title,
@@ -339,20 +719,17 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                 child: const Icon(Icons.check_rounded, color: Colors.white, size: 40),
               ),
               const SizedBox(height: 16),
-
               Text(
                 isAr ? 'تم حجز وتأكيد الرحلة بنجاح!' : 'Journey Successfully Booked!',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.nileTeal),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.primaryPurple, letterSpacing: -0.3),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
                 '${isAr ? 'كود الحجز' : 'Booking Ref'}: #HNDLK-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
-                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.terracotta, fontSize: 13),
+                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryOrange, fontSize: 13),
               ),
               const Divider(height: 24),
-
-              // Booking Details Summary Table
               _receiptRow(isAr ? 'اسم الرحلة' : 'Trip Title', _currentTrip.title),
               _receiptRow(isAr ? 'تاريخ البداية' : 'Start Date', '${_selectedStartDate.day}/${_selectedStartDate.month}/${_selectedStartDate.year}'),
               _receiptRow(isAr ? 'تاريخ النهاية' : 'End Date', '${endDate.day}/${endDate.month}/${endDate.year}'),
@@ -364,15 +741,17 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                     : (isAr ? selectedHotel.nameAr : selectedHotel.nameEn),
               ),
               _receiptRow(isAr ? 'التكلفة الكلية' : 'Total Amount', provider.formatPrice(totalEgp, totalUsd), isBold: true),
-
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  backgroundColor: AppColors.nileTeal,
+              AppleTouchable(
+                onTap: () => Navigator.pop(context),
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    backgroundColor: AppColors.primaryPurple,
+                  ),
+                  child: Text(isAr ? 'تم، العودة للرحلة' : 'Done & Return'),
                 ),
-                child: Text(isAr ? 'تم، العودة للرحلة' : 'Done & Return'),
               ),
             ],
           ),
@@ -387,338 +766,17 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 13)),
+          Text(label, style: const TextStyle(color: AppColors.mediumGray, fontSize: 13)),
           Text(
             val,
             style: TextStyle(
               fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
               fontSize: isBold ? 15 : 13,
-              color: isBold ? AppColors.terracotta : AppColors.charcoal,
+              color: isBold ? AppColors.primaryOrange : AppColors.darkGray,
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildWholeTripListView(
-    BuildContext context,
-    AppProvider provider,
-    bool isAr,
-    int totalDays,
-    Destination dest,
-    Hotel selectedHotel,
-    int tripDays,
-  ) {
-    final isNoHotel = _selectedHotelBudget == 'No Hotel Needed';
-    final hotelTotalEgp = isNoHotel ? 0.0 : selectedHotel.pricePerNightEgp * tripDays;
-    final hotelTotalUsd = isNoHotel ? 0.0 : selectedHotel.pricePerNightUsd * tripDays;
-
-    return ListView(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 110),
-      children: [
-        // Hotel Accommodation & Budget Selector Section
-        Container(
-          padding: const EdgeInsets.all(16),
-          margin: const EdgeInsets.only(bottom: 20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.papyrusGold.withValues(alpha: 0.6), width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.nileTeal.withValues(alpha: 0.06),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    isAr ? 'اختر فندق وإقامة الرحلة' : 'Select Hotel & Accommodation',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.nileTeal),
-                  ),
-                  const Icon(Icons.hotel_rounded, color: AppColors.terracotta),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Budget Tier Selector Chips (Including No Hotel Needed!)
-              Text(
-                isAr ? 'فئة خيار الإقامة:' : 'Accommodation Option:',
-                style: const TextStyle(fontSize: 12, color: AppColors.textMuted, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: ['No Hotel Needed', 'Budget', 'Moderate', 'Luxury', 'Eco Lodge'].map((tier) {
-                  final isSel = _selectedHotelBudget == tier;
-                  final labelText = tier == 'No Hotel Needed'
-                      ? (isAr ? 'إقامة شخصية (بدون فندق)' : 'No Hotel Needed')
-                      : tier;
-
-                  return ChoiceChip(
-                    label: Text(labelText),
-                    selected: isSel,
-                    selectedColor: tier == 'No Hotel Needed' ? AppColors.terracotta : AppColors.papyrusGold,
-                    labelStyle: TextStyle(
-                      color: isSel ? (tier == 'No Hotel Needed' ? Colors.white : AppColors.nileTeal) : AppColors.charcoal,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                    onSelected: (_) {
-                      setState(() {
-                        _selectedHotelBudget = tier;
-                      });
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-
-              // Selected Hotel Banner OR No Hotel Banner
-              if (isNoHotel)
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppColors.desertSand,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.terracotta.withValues(alpha: 0.5)),
-                  ),
-                  child: Row(
-                    children: [
-                      const CircleAvatar(
-                        backgroundColor: AppColors.terracotta,
-                        radius: 20,
-                        child: Icon(Icons.home_outlined, color: Colors.white, size: 22),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isAr ? 'إقامة شخصية خاصة' : 'Personal Accommodation',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
-                            Text(
-                              isAr ? 'لن يتم إضافة أية تكاليف حجز فندق للرحلة' : 'No hotel reservation fees added to total trip cost',
-                              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.desertSand,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.borderLight),
-                  ),
-                  child: Row(
-                    children: [
-                      SafeNetworkImage(
-                        imageUrl: selectedHotel.imageUrl,
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isAr ? selectedHotel.nameAr : selectedHotel.nameEn,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              '${selectedHotel.starRating}★ • ${isAr ? selectedHotel.cityAr : selectedHotel.cityEn}',
-                              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${provider.formatPrice(hotelTotalEgp, hotelTotalUsd)} ($tripDays ${isAr ? 'ليالي' : 'nights'})',
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.terracotta),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-        ),
-
-        // Daily Master Schedule Items
-        ...List.generate(totalDays, (dIdx) {
-          final dayNum = dIdx + 1;
-          final dayItems = _currentTrip.items.where((i) => i.dayNumber == dayNum).toList();
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.borderLight),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Day Header
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: const BoxDecoration(
-                    color: AppColors.desertSand,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                  ),
-                  child: Text(
-                    '${isAr ? 'اليوم' : 'Day'} $dayNum • ${isAr ? dest.nameAr : dest.nameEn}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.nileTeal),
-                  ),
-                ),
-
-                if (dayItems.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      isAr ? 'لا توجد أنشطة مجدولة لهذا اليوم' : 'Free leisure day.',
-                      style: const TextStyle(color: AppColors.textMuted),
-                    ),
-                  )
-                else
-                  ...dayItems.map((item) {
-                    final attraction = TourismDatabase.attractions.firstWhere(
-                      (a) => a.id == item.attractionId,
-                      orElse: () => TourismDatabase.attractions.first,
-                    );
-
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      leading: SafeNetworkImage(
-                        imageUrl: attraction.imageUrl,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      title: Text(
-                        isAr ? attraction.nameAr : attraction.nameEn,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                      subtitle: Text(
-                        '${item.startTime} - ${item.endTime} (${attraction.estimatedDurationMinutes} mins)',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
-                      ),
-                      trailing: Text(
-                        provider.formatPrice(attraction.priceEgp, attraction.priceUsd),
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.terracotta),
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => AttractionDetailScreen(attraction: attraction),
-                          ),
-                        );
-                      },
-                    );
-                  }),
-              ],
-            ),
-          );
-        }),
-      ],
-    );
-  }
-
-  Widget _buildDayItemsListView(BuildContext context, AppProvider provider, bool isAr, int dayNum) {
-    final dayItems = _currentTrip.items.where((i) => i.dayNumber == dayNum).toList();
-
-    if (dayItems.isEmpty) {
-      return Center(
-        child: Text(
-          isAr ? 'لا توجد أنشطة مجدولة لهذا اليوم' : 'No activities scheduled for Day $dayNum.',
-          style: const TextStyle(color: AppColors.textMuted),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 110),
-      itemCount: dayItems.length,
-      itemBuilder: (context, index) {
-        final item = dayItems[index];
-        final attraction = TourismDatabase.attractions.firstWhere(
-          (a) => a.id == item.attractionId,
-          orElse: () => TourismDatabase.attractions.first,
-        );
-
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                SafeNetworkImage(
-                  imageUrl: attraction.imageUrl,
-                  width: 70,
-                  height: 70,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isAr ? attraction.nameAr : attraction.nameEn,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${item.startTime} - ${item.endTime}',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        provider.formatPrice(attraction.priceEgp, attraction.priceUsd),
-                        style: const TextStyle(color: AppColors.terracotta, fontWeight: FontWeight.bold, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
-                  onPressed: () {
-                    setState(() {
-                      _currentTrip.items.removeWhere((i) => i.id == item.id);
-                    });
-                    provider.updateTrip(_currentTrip);
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

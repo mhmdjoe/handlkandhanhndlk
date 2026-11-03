@@ -6,6 +6,8 @@ import '../providers/app_provider.dart';
 import '../services/itinerary_engine.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_motion.dart';
+import 'apple_touchable.dart';
 import 'network_image_with_fallback.dart';
 import '../views/planner/itinerary_detail_screen.dart';
 
@@ -28,13 +30,12 @@ class AddToTripModal extends StatefulWidget {
 }
 
 class _AddToTripModalState extends State<AddToTripModal> {
-  String? _selectedTripId; // 'new' or trip.id
+  String? _selectedTripId;
   int _selectedDay = 1;
   String _selectedTimeSlot = '09:00';
   bool _isAdded = false;
   Trip? _addedTrip;
 
-  // New trip fields if user chooses 'Create New Trip'
   final _newTripTitleController = TextEditingController();
   int _newTripDays = 3;
   final int _newTripTravelers = 2;
@@ -61,7 +62,6 @@ class _AddToTripModalState extends State<AddToTripModal> {
     final a = widget.attraction;
     final userTrips = provider.userTrips;
 
-    // Default selection logic
     _selectedTripId ??= userTrips.isNotEmpty ? userTrips.first.id : 'new';
 
     final targetTrip = userTrips.firstWhere(
@@ -99,25 +99,27 @@ class _AddToTripModalState extends State<AddToTripModal> {
           // Drag handle bar
           Center(
             child: Container(
-              width: 40,
-              height: 4,
+              width: 36,
+              height: 5,
               decoration: BoxDecoration(
                 color: AppColors.borderLight,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.5),
               ),
             ),
           ),
           const SizedBox(height: 16),
 
-          // Attraction Header Card
+          // Header with attraction thumbnail
           Row(
             children: [
-              SafeNetworkImage(
-                imageUrl: a.imageUrl,
-                width: 70,
-                height: 70,
-                fit: BoxFit.cover,
-                borderRadius: BorderRadius.circular(12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: SafeNetworkImage(
+                  imageUrl: a.imageUrl,
+                  width: 54,
+                  height: 54,
+                  fit: BoxFit.cover,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -125,333 +127,314 @@ class _AddToTripModalState extends State<AddToTripModal> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
+                      loc.translate('addToTrip'),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryPurple, letterSpacing: -0.3),
+                    ),
+                    Text(
                       isAr ? a.nameAr : a.nameEn,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: const TextStyle(fontSize: 14, color: AppColors.darkGray, fontWeight: FontWeight.w600),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${isAr ? a.governorateAr : a.governorateEn} • ${isAr ? a.category.nameAr : a.category.nameEn}',
-                      style: const TextStyle(color: AppColors.terracotta, fontSize: 12, fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      provider.formatPrice(a.priceEgp, a.priceUsd),
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.nileTeal, fontSize: 14),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const Divider(height: 24),
+          const SizedBox(height: 20),
 
-          if (!_isAdded) ...[
-            // 1. Select Target Trip Dropdown
-            Text(
-              isAr ? 'اختر الرحلة المراد الإضافة إليها' : 'Select Target Trip',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.nileTeal),
-            ),
-            const SizedBox(height: 8),
-
-            DropdownButtonFormField<String>(
-              initialValue: _selectedTripId,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.card_travel_rounded, color: AppColors.nileTeal),
-              ),
-              items: [
-                if (userTrips.isNotEmpty)
-                  ...userTrips.map((t) {
-                    return DropdownMenuItem(
-                      value: t.id,
-                      child: Text(
-                        '${t.title} (${t.daysCount} ${isAr ? 'أيام' : 'Days'})',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    );
-                  }),
-                DropdownMenuItem(
-                  value: 'new',
-                  child: Text(
-                    isAr ? '+ إنشاء رحلة جديدة وتحديدها' : '+ Create New Trip',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.terracotta),
-                  ),
-                ),
-              ],
-              onChanged: (val) {
-                if (val != null) {
-                  setState(() {
-                    _selectedTripId = val;
-                    _selectedDay = 1;
-                  });
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // If 'Create New Trip' is selected, show New Trip Inputs
-            if (_selectedTripId == 'new') ...[
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.desertSand,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.papyrusGold),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isAr ? 'بيانات الرحلة الجديدة' : 'New Trip Details',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.nileTeal),
-                    ),
-                    const SizedBox(height: 10),
-
-                    TextField(
-                      controller: _newTripTitleController,
-                      decoration: InputDecoration(
-                        labelText: isAr ? 'اسم الرحلة' : 'Trip Name',
-                        isDense: true,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                isAr ? 'عدد الأيام' : 'Days',
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 4),
-                              Wrap(
-                                spacing: 4,
-                                children: [2, 3, 5, 7].map((d) {
-                                  final isSel = _newTripDays == d;
-                                  return ChoiceChip(
-                                    label: Text('$d'),
-                                    selected: isSel,
-                                    selectedColor: AppColors.nileTeal,
-                                    labelStyle: TextStyle(fontSize: 11, color: isSel ? Colors.white : AppColors.charcoal),
-                                    onSelected: (_) => setState(() => _newTripDays = d),
-                                  );
-                                }).toList(),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-
-            // 2. Select Trip Day
-            Text(
-              isAr ? 'اختر اليوم في الرحلة' : 'Select Trip Day',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.nileTeal),
-            ),
-            const SizedBox(height: 8),
-
-            SizedBox(
-              height: 40,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: maxDaysForSelectedTrip,
-                itemBuilder: (context, idx) {
-                  final dayNum = idx + 1;
-                  final isSel = _selectedDay == dayNum;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text('${loc.translate('day')} $dayNum'),
-                      selected: isSel,
-                      selectedColor: AppColors.papyrusGold,
-                      labelStyle: TextStyle(
-                        color: isSel ? AppColors.nileTeal : AppColors.charcoal,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      onSelected: (_) => setState(() => _selectedDay = dayNum),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // 3. Select Time Window
-            Text(
-              isAr ? 'اختر توقيت الزيارة' : 'Select Time Window',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.nileTeal),
-            ),
-            const SizedBox(height: 8),
-
-            SizedBox(
-              height: 40,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _timeSlots.length,
-                itemBuilder: (context, idx) {
-                  final slot = _timeSlots[idx];
-                  final isSel = _selectedTimeSlot == slot;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(slot),
-                      selected: isSel,
-                      selectedColor: AppColors.nileTeal,
-                      labelStyle: TextStyle(
-                        color: isSel ? Colors.white : AppColors.charcoal,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      onSelected: (_) => setState(() => _selectedTimeSlot = slot),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Action Button
-            ElevatedButton.icon(
-              onPressed: () => _executeAddToTrip(provider, isAr),
-              icon: const Icon(Icons.add_circle_outline_rounded),
-              label: Text(isAr ? 'تأكيد الإضافة للرحلة' : 'Confirm & Add to Trip'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-                backgroundColor: AppColors.nileTeal,
-              ),
-            ),
-          ] else ...[
-            // Success Feedback & Jump into Trip
+          if (_isAdded && _addedTrip != null) ...[
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.verifiedGreen.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.verifiedGreen),
+                border: Border.all(color: AppColors.verifiedGreen.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle_rounded, color: AppColors.verifiedGreen, size: 32),
+                  const Icon(Icons.check_circle_rounded, color: AppColors.verifiedGreen, size: 28),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          isAr ? 'تمت إضافة المكان للرحلة المحددة بنجاح!' : 'Added directly to your selected trip!',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.verifiedGreen, fontSize: 14),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          isAr ? 'الرحلة: ${_addedTrip?.title} • اليوم $_selectedDay في الساعة $_selectedTimeSlot' : '${_addedTrip?.title} • Day $_selectedDay at $_selectedTimeSlot',
-                          style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
-                        ),
-                      ],
+                    child: Text(
+                      isAr ? 'تمت إضافة المكان إلى جدول الرحلة بنجاح!' : 'Attraction added to your trip successfully!',
+                      style: const TextStyle(color: AppColors.verifiedGreen, fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
-
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(isAr ? 'متابعة الاستكشاف' : 'Continue Exploring'),
+                  child: AppleTouchable(
+                    onTap: () => Navigator.pop(context),
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(isAr ? 'إغلاق' : 'Close'),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context); // Close bottom sheet
-                      if (_addedTrip != null) {
+                  child: AppleTouchable(
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        AppCupertinoPageRoute(
+                          page: ItineraryDetailScreen(trip: _addedTrip!),
+                        ),
+                      );
+                    },
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => ItineraryDetailScreen(trip: _addedTrip!),
+                          AppCupertinoPageRoute(
+                            page: ItineraryDetailScreen(trip: _addedTrip!),
                           ),
                         );
-                      }
-                    },
-                    icon: const Icon(Icons.open_in_new_rounded, size: 18),
-                    label: Text(isAr ? 'افتح الرحلة' : 'Open Trip'),
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.terracotta),
+                      },
+                      child: Text(isAr ? 'عرض الجدول' : 'View Itinerary'),
+                    ),
                   ),
                 ),
               ],
+            ),
+          ] else ...[
+            // Trip Selection
+            Text(
+              isAr ? 'اختر الرحلة:' : 'Select Trip:',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.darkGray),
+            ),
+            const SizedBox(height: 8),
+
+            SizedBox(
+              height: 44,
+              child: ListView(
+                physics: const BouncingScrollPhysics(),
+                scrollDirection: Axis.horizontal,
+                children: [
+                  ...userTrips.map((t) {
+                    final isSel = _selectedTripId == t.id;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: AppleTouchable(
+                        pressedScale: 0.92,
+                        onTap: () => setState(() => _selectedTripId = t.id),
+                        child: ChoiceChip(
+                          label: Text(t.title),
+                          selected: isSel,
+                          onSelected: null,
+                          selectedColor: AppColors.primaryOrange,
+                          backgroundColor: AppColors.lightPurple,
+                          checkmarkColor: Colors.white,
+                          labelStyle: TextStyle(
+                            color: isSel ? Colors.white : AppColors.darkGray,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                  AppleTouchable(
+                    pressedScale: 0.92,
+                    onTap: () => setState(() => _selectedTripId = 'new'),
+                    child: ChoiceChip(
+                      label: Text(isAr ? '+ رحلة جديدة' : '+ Create New Trip'),
+                      selected: _selectedTripId == 'new',
+                      onSelected: null,
+                      selectedColor: AppColors.primaryOrange,
+                      backgroundColor: AppColors.lightPurple,
+                      checkmarkColor: Colors.white,
+                      labelStyle: TextStyle(
+                        color: _selectedTripId == 'new' ? Colors.white : AppColors.primaryPurple,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // If new trip is chosen, show input fields
+            if (_selectedTripId == 'new') ...[
+              TextField(
+                controller: _newTripTitleController,
+                decoration: InputDecoration(
+                  labelText: isAr ? 'عنوان الرحلة الجديدة' : 'New Trip Title',
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Text(isAr ? 'عدد الأيام:' : 'Days Count:'),
+                  const SizedBox(width: 12),
+                  DropdownButton<int>(
+                    value: _newTripDays,
+                    items: [1, 2, 3, 4, 5, 7, 10].map((d) {
+                      return DropdownMenuItem(value: d, child: Text('$d ${loc.translate('days')}'));
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => _newTripDays = val);
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // Day Selector
+            Row(
+              children: [
+                Text(
+                  isAr ? 'اليوم في الرحلة:' : 'Day in Trip:',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.darkGray),
+                ),
+                const SizedBox(width: 12),
+                DropdownButton<int>(
+                  value: _selectedDay > maxDaysForSelectedTrip ? 1 : _selectedDay,
+                  items: List.generate(maxDaysForSelectedTrip, (i) => i + 1).map((day) {
+                    return DropdownMenuItem(
+                      value: day,
+                      child: Text('${loc.translate('day')} $day'),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => _selectedDay = val);
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Time Slot Selector
+            Text(
+              isAr ? 'موعد الزيارة المقترح:' : 'Suggested Visit Time:',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.darkGray),
+            ),
+            const SizedBox(height: 8),
+
+            Wrap(
+              spacing: 8,
+              children: _timeSlots.map((slot) {
+                final isSel = _selectedTimeSlot == slot;
+                return AppleTouchable(
+                  pressedScale: 0.92,
+                  onTap: () => setState(() => _selectedTimeSlot = slot),
+                  child: ChoiceChip(
+                    label: Text(slot),
+                    selected: isSel,
+                    onSelected: null,
+                    selectedColor: AppColors.primaryOrange,
+                    backgroundColor: AppColors.lightPurple,
+                    checkmarkColor: Colors.white,
+                    labelStyle: TextStyle(
+                      color: isSel ? Colors.white : AppColors.darkGray,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 24),
+
+            // Confirm Button
+            AppleTouchable(
+              onTap: () {
+                Trip updatedTrip;
+                if (_selectedTripId == 'new') {
+                  final dest = TourismDatabase.destinations.firstWhere(
+                    (d) => d.id == a.destinationId,
+                    orElse: () => TourismDatabase.destinations.first,
+                  );
+
+                  final newTrip = ItineraryEngine.generateAutoTrip(
+                    title: _newTripTitleController.text.trim().isNotEmpty
+                        ? _newTripTitleController.text.trim()
+                        : 'Handelak ${dest.nameEn} Journey',
+                    destinationId: a.destinationId,
+                    attractionIds: [a.id],
+                    startDate: DateTime.now().add(const Duration(days: 3)),
+                    daysCount: _newTripDays,
+                    travelerCount: _newTripTravelers,
+                  );
+                  provider.addTrip(newTrip);
+                  updatedTrip = newTrip;
+                } else {
+                  int startHour = int.tryParse(_selectedTimeSlot.split(':')[0]) ?? 9;
+                  int endHour = startHour + (a.estimatedDurationMinutes / 60).clamp(1, 3).toInt();
+                  String endTimeStr = '${endHour.toString().padLeft(2, '0')}:00';
+
+                  final newItem = ItineraryItem(
+                    id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+                    attractionId: a.id,
+                    dayNumber: _selectedDay,
+                    startTime: _selectedTimeSlot,
+                    endTime: endTimeStr,
+                    notes: 'Added from Explore screen',
+                  );
+
+                  final existingTrip = userTrips.firstWhere((t) => t.id == _selectedTripId);
+                  final updatedItems = List<ItineraryItem>.from(existingTrip.items)..add(newItem);
+
+                  double totalEgp = 0;
+                  double totalUsd = 0;
+                  for (var item in updatedItems) {
+                    final itemAttraction = TourismDatabase.attractions.firstWhere(
+                      (att) => att.id == item.attractionId,
+                      orElse: () => a,
+                    );
+                    totalEgp += itemAttraction.priceEgp;
+                    totalUsd += itemAttraction.priceUsd;
+                  }
+
+                  updatedTrip = Trip(
+                    id: existingTrip.id,
+                    title: existingTrip.title,
+                    destinationId: existingTrip.destinationId,
+                    startDate: existingTrip.startDate,
+                    endDate: existingTrip.endDate,
+                    daysCount: existingTrip.daysCount,
+                    travelerCount: existingTrip.travelerCount,
+                    status: existingTrip.status,
+                    hotelBudgetTier: existingTrip.hotelBudgetTier,
+                    selectedHotelId: existingTrip.selectedHotelId,
+                    items: updatedItems,
+                    totalCostEgp: totalEgp,
+                    totalCostUsd: totalUsd,
+                  );
+                  provider.updateTrip(updatedTrip);
+                }
+
+                setState(() {
+                  _isAdded = true;
+                  _addedTrip = updatedTrip;
+                });
+              },
+              child: ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                  backgroundColor: AppColors.primaryPurple,
+                ),
+                child: Text(
+                  loc.translate('confirmAdd'),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           ],
         ],
       ),
     );
-  }
-
-  void _executeAddToTrip(AppProvider provider, bool isAr) {
-    final a = widget.attraction;
-    Trip targetTrip;
-
-    if (_selectedTripId == 'new' || provider.userTrips.isEmpty) {
-      final tripTitle = _newTripTitleController.text.trim().isEmpty
-          ? 'Trip to ${a.governorateEn}'
-          : _newTripTitleController.text.trim();
-
-      targetTrip = ItineraryEngine.generateAutoTrip(
-        title: tripTitle,
-        destinationId: a.destinationId,
-        attractionIds: [a.id],
-        startDate: DateTime.now().add(const Duration(days: 7)),
-        daysCount: _newTripDays,
-        travelerCount: _newTripTravelers,
-      );
-      provider.addTrip(targetTrip);
-    } else {
-      final active = provider.userTrips.firstWhere((t) => t.id == _selectedTripId);
-      final startHour = int.tryParse(_selectedTimeSlot.split(':')[0]) ?? 9;
-      final durationHours = (a.estimatedDurationMinutes / 60).ceil();
-      final endHour = startHour + durationHours;
-      final endTimeStr = '${endHour.toString().padLeft(2, '0')}:00';
-
-      final newItem = ItineraryItem(
-        id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-        attractionId: a.id,
-        dayNumber: _selectedDay,
-        startTime: _selectedTimeSlot,
-        endTime: endTimeStr,
-        notes: 'Added from exploration popup',
-        transportToNext: TourismDatabase.defaultTransportOptions[0],
-      );
-
-      targetTrip = Trip(
-        id: active.id,
-        title: active.title,
-        destinationId: active.destinationId,
-        startDate: active.startDate,
-        endDate: active.endDate,
-        daysCount: active.daysCount,
-        items: [...active.items, newItem],
-        totalCostEgp: active.totalCostEgp + a.priceEgp,
-        totalCostUsd: active.totalCostUsd + a.priceUsd,
-        status: active.status,
-        travelerCount: active.travelerCount,
-      );
-
-      provider.updateTrip(targetTrip);
-    }
-
-    setState(() {
-      _isAdded = true;
-      _addedTrip = targetTrip;
-    });
   }
 }
