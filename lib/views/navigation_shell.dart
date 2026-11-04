@@ -78,7 +78,7 @@ class _NavigationShellState extends State<NavigationShell> {
   double _calculatePillWidth(String text, bool isRtl, double maxTabSlotWidth) {
     const TextStyle style = TextStyle(
       fontWeight: FontWeight.bold,
-      fontSize: 13,
+      fontSize: 14,
       letterSpacing: -0.2,
     );
 
@@ -88,9 +88,9 @@ class _NavigationShellState extends State<NavigationShell> {
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
     )..layout();
 
-    // Icon size (22) + gap (6) + text width + padding (28)
-    double neededWidth = 22.0 + 6.0 + painter.width + 28.0;
-    return neededWidth.clamp(52.0, maxTabSlotWidth + 14.0);
+    // Icon size (24) + gap (8) + text width + generous horizontal padding (40)
+    double neededWidth = 24.0 + 8.0 + painter.width + 40.0;
+    return neededWidth.clamp(72.0, maxTabSlotWidth + 24.0);
   }
 
   @override
@@ -212,22 +212,23 @@ class _NavigationShellState extends State<NavigationShell> {
                         padding: const EdgeInsets.symmetric(horizontal: barPadding),
                         child: Stack(
                           children: [
-                            // 1. Sliding Orange Active Pill Shape (Adapts to Active Word Size)
+                            // 1. Sliding Orange Active Pill Shape (Prominent & Spacious)
                             AnimatedPositioned(
                               duration: const Duration(milliseconds: 200),
                               curve: AppCurves.springSnappy,
                               left: targetLeft - barPadding,
-                              top: 14,
+                              top: 10,
                               width: pillWidth,
-                              height: 44,
+                              height: 52,
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: AppColors.primaryOrange,
-                                  borderRadius: BorderRadius.circular(22),
+                                  borderRadius: BorderRadius.circular(26),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppColors.primaryOrange.withValues(alpha: 0.45),
-                                      blurRadius: 12,
+                                      color: AppColors.primaryOrange.withValues(alpha: 0.52),
+                                      blurRadius: 14,
+                                      spreadRadius: 1,
                                       offset: const Offset(0, 4),
                                     ),
                                   ],
