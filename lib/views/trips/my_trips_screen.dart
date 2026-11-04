@@ -295,12 +295,19 @@ class _SlidableTripCardState extends State<_SlidableTripCard> {
                     if (confirmed == true) {
                       widget.provider.removeTrip(widget.trip.id);
                       if (context.mounted) {
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(widget.isAr ? 'تم حذف الرحلة' : 'Trip deleted'),
+                            duration: const Duration(seconds: 5),
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: AppColors.darkGray,
+                            content: Text(
+                              widget.isAr ? 'تم حذف الرحلة بنجاح' : 'Trip deleted successfully',
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                            ),
                             action: SnackBarAction(
                               label: widget.isAr ? 'تراجع' : 'Undo',
-                              textColor: AppColors.papyrusGold,
+                              textColor: AppColors.primaryOrange,
                               onPressed: () => widget.provider.addTrip(widget.trip),
                             ),
                           ),
@@ -462,6 +469,25 @@ class _SlidableTripCardState extends State<_SlidableTripCard> {
                                   final confirmed = await widget.onDeleteRequested();
                                   if (confirmed == true) {
                                     widget.provider.removeTrip(widget.trip.id);
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          duration: const Duration(seconds: 5),
+                                          behavior: SnackBarBehavior.floating,
+                                          backgroundColor: AppColors.darkGray,
+                                          content: Text(
+                                            widget.isAr ? 'تم حذف الرحلة بنجاح' : 'Trip deleted successfully',
+                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                                          ),
+                                          action: SnackBarAction(
+                                            label: widget.isAr ? 'تراجع' : 'Undo',
+                                            textColor: AppColors.primaryOrange,
+                                            onPressed: () => widget.provider.addTrip(widget.trip),
+                                          ),
+                                        ),
+                                      );
+                                    }
                                   }
                                 },
                                 child: const Padding(
