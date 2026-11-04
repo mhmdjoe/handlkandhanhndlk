@@ -25,9 +25,8 @@ class _NavigationShellState extends State<NavigationShell> {
   late int _currentIndex;
   late PageController _pageController;
 
-  // Real-time cursor tracking state
-  bool _isDragging = false;
-  double _dragX = 0.0;
+  // Real-time hover & drag state for ultra-responsive feedback
+  int? _hoverIndex;
   int _lastHapticIndex = -1;
 
   @override
@@ -48,61 +47,31 @@ class _NavigationShellState extends State<NavigationShell> {
       HapticFeedback.selectionClick();
       setState(() {
         _currentIndex = index;
-        _isDragging = false;
+        _hoverIndex = null;
       });
       _pageController.animateToPage(
         index,
-        duration: AppDurations.medium,
+        duration: const Duration(milliseconds: 280),
         curve: AppCurves.springSnappy,
       );
     }
   }
 
-  void _onDragStart(double localX, double totalWidth, bool isRtl) {
-    setState(() {
-      _isDragging = true;
-      _dragX = localX;
-    });
-    _checkHapticFeedback(localX, totalWidth, isRtl);
-  }
-
-  void _onDragUpdate(double localX, double totalWidth, bool isRtl) {
-    setState(() {
-      _dragX = localX;
-    });
-    _checkHapticFeedback(localX, totalWidth, isRtl);
-  }
-
-  void _onDragEnd(double totalWidth, bool isRtl) {
-    if (totalWidth <= 0) return;
-    const numTabs = 5;
-    final tabWidth = totalWidth / numTabs;
-    int rawIndex = ((_dragX - tabWidth / 2) / tabWidth).round().clamp(0, numTabs - 1);
-    int targetIndex = isRtl ? (numTabs - 1 - rawIndex) : rawIndex;
-
-    setState(() {
-      _isDragging = false;
-      _currentIndex = targetIndex;
-    });
-
-    HapticFeedback.selectionClick();
-    _pageController.animateToPage(
-      targetIndex,
-      duration: AppDurations.medium,
-      curve: AppCurves.springSnappy,
-    );
-  }
-
-  void _checkHapticFeedback(double localX, double totalWidth, bool isRtl) {
+  void _handlePointerHover(double localX, double totalWidth, bool isRtl) {
     if (totalWidth <= 0) return;
     const numTabs = 5;
     final tabWidth = totalWidth / numTabs;
     int rawIndex = (localX / tabWidth).floor().clamp(0, numTabs - 1);
-    int hoverIndex = isRtl ? (numTabs - 1 - rawIndex) : rawIndex;
+    int targetIndex = isRtl ? (numTabs - 1 - rawIndex) : rawIndex;
 
-    if (_lastHapticIndex != hoverIndex) {
-      _lastHapticIndex = hoverIndex;
-      HapticFeedback.selectionClick();
+    if (_hoverIndex != targetIndex) {
+      setState(() {
+        _hoverIndex = targetIndex;
+      });
+      if (_lastHapticIndex != targetIndex) {
+        _lastHapticIndex = targetIndex;
+        HapticFeedback.selectionClick();
+      }
     }
   }
 
@@ -164,7 +133,7 @@ class _NavigationShellState extends State<NavigationShell> {
               HapticFeedback.selectionClick();
               setState(() {
                 _currentIndex = index;
-                _isDragging = false;
+                _hoverIndex = null;
               });
             }
           },
@@ -208,17 +177,18 @@ class _NavigationShellState extends State<NavigationShell> {
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final tabWidth = constraints.maxWidth / navItems.length;
+                      final activeDisplayIndex = _hoverIndex ?? _currentIndex;
 
-                      final double targetLeft = _isDragging
-                          ? (_dragX - tabWidth / 2).clamp(0.0, constraints.maxWidth - tabWidth) + 4
-                          : (isAr ? (navItems.length - 1 - _currentIndex) * tabWidth : _currentIndex * tabWidth) + 4;
+                      final double targetLeft = (isAr
+                          ? (navItems.length - 1 - activeDisplayIndex) * tabWidth
+                          : activeDisplayIndex * tabWidth) + 4;
 
                       return Stack(
                         children: [
-                          // 1. Real-Time Cursor Tracking Orange Active Pill Shape
+                          // 1. Sliding Orange Active Pill Shape
                           AnimatedPositioned(
-                            duration: _isDragging ? Duration.zero : AppDurations.medium,
-                            curve: _isDragging ? Curves.linear : AppCurves.springSnappy,
+                            duration: const Duration(milliseconds: 180),
+                            curve: AppCurves.springSnappy,
                             left: targetLeft,
                             top: 8,
                             width: tabWidth - 8,
@@ -238,19 +208,36 @@ class _NavigationShellState extends State<NavigationShell> {
                             ),
                           ),
 
-                          // 2. Interactive Real-Time Cursor Drag & Tap Layer
-                          GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onPanStart: (details) => _onDragStart(details.localPosition.dx, constraints.maxWidth, isAr),
-                            onPanUpdate: (details) => _onDragUpdate(details.localPosition.dx, constraints.maxWidth, isAr),
-                            onPanEnd: (details) => _onDragEnd(constraints.maxWidth, isAr),
-                            onPanCancel: () => setState(() => _isDragging = false),
-                            child: MouseRegion(
-                              cursor: SystemMouseCursors.click,
+                          // 2. Interactive Real-Time Mouse Hover & Touch Gestures Layer
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            onHover: (event) => _handlePointerHover(event.localPosition.dx, constraints.maxWidth, isAr),
+                            onExit: (_) => setState(() => _hoverIndex = null),
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTapDown: (details) {
+                                const numTabs = 5;
+                                final width = constraints.maxWidth;
+                                final w = width / numTabs;
+                                int rawIndex = (details.localPosition.dx / w).floor().clamp(0, numTabs - 1);
+                                int targetIndex = isAr ? (numTabs - 1 - rawIndex) : rawIndex;
+                                _onTabChanged(targetIndex);
+                              },
+                              onPanUpdate: (details) => _handlePointerHover(details.localPosition.dx, constraints.maxWidth, isAr),
+                              onPanEnd: (_) {
+                                if (_hoverIndex != null) {
+                                  _onTabChanged(_hoverIndex!);
+                                }
+                              },
                               child: Row(
                                 children: [
                                   for (int i = 0; i < navItems.length; i++)
-                                    _buildNavItemTile(navItems[i], i == _currentIndex, loc),
+                                    _buildNavItemTile(
+                                      navItems[i],
+                                      activeDisplayIndex == i,
+                                      _currentIndex == i,
+                                      loc,
+                                    ),
                                 ],
                               ),
                             ),
@@ -268,26 +255,26 @@ class _NavigationShellState extends State<NavigationShell> {
     );
   }
 
-  Widget _buildNavItemTile(_NavItemData item, bool isSelected, AppLocalizations loc) {
+  Widget _buildNavItemTile(_NavItemData item, bool isHighlighted, bool isSelected, AppLocalizations loc) {
     return Expanded(
       child: Center(
         child: AnimatedScale(
-          scale: isSelected ? 1.08 : 1.0,
+          scale: isHighlighted ? 1.08 : 1.0,
           duration: AppDurations.fast,
           curve: AppCurves.springBouncy,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                isSelected ? item.activeIcon : item.icon,
-                color: isSelected ? Colors.white : Colors.white70,
+                isHighlighted ? item.activeIcon : item.icon,
+                color: isHighlighted ? Colors.white : Colors.white70,
                 size: 22,
               ),
-              if (isSelected) ...[
+              if (isHighlighted) ...[
                 const SizedBox(width: 6),
                 AnimatedOpacity(
                   duration: AppDurations.fast,
-                  opacity: isSelected ? 1.0 : 0.0,
+                  opacity: isHighlighted ? 1.0 : 0.0,
                   child: Text(
                     loc.translate(item.labelKey),
                     style: const TextStyle(
