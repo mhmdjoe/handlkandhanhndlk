@@ -1,12 +1,12 @@
 {
-    "name": "handlkandhnhndlk",
-    "short_name": "handlkandhnhndlk",
+    "name": "HNDLK W HNHNDLK (هندلك وهنهندلك)",
+    "short_name": "Handelak",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#4300C8",
+    "theme_color": "#4300C8",
+    "description": "Egypt's premier intelligent travel discovery and AI trip planning platform.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

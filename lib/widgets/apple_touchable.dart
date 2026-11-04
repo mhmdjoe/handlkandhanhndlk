@@ -108,25 +108,28 @@ class _AppleTouchableState extends State<AppleTouchable>
       return widget.child;
     }
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapDown: _onTapDown,
-      onTapUp: _onTapUp,
-      onTapCancel: _onTapCancel,
-      onLongPress: widget.onLongPress != null
-          ? () {
-              if (widget.enableHaptics) {
-                HapticFeedback.mediumImpact();
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
+        onLongPress: widget.onLongPress != null
+            ? () {
+                if (widget.enableHaptics) {
+                  HapticFeedback.mediumImpact();
+                }
+                widget.onLongPress?.call();
               }
-              widget.onLongPress?.call();
-            }
-          : null,
-      child: widget.borderRadius != null
-          ? ClipRRect(
-              borderRadius: widget.borderRadius!,
-              child: effectiveChild,
-            )
-          : effectiveChild,
+            : null,
+        child: widget.borderRadius != null
+            ? ClipRRect(
+                borderRadius: widget.borderRadius!,
+                child: effectiveChild,
+              )
+            : effectiveChild,
+      ),
     );
   }
 }

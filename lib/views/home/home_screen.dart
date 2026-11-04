@@ -113,11 +113,14 @@ class HomeScreen extends StatelessWidget {
 
           // Main Body Content
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 110),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 110),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                   // Dual Promise Action Cards (Discover Egypt & Smart AI Planner)
                   StaggeredEntranceItem(
                     index: 0,
@@ -340,6 +343,8 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
         ],
       ),
     );

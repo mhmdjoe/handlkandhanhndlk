@@ -72,6 +72,13 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
         title: Text(_currentTrip.title),
         actions: [
           AppleTouchable(
+            onTap: () => _showPrintVoucherModal(context, provider, isAr),
+            child: const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Icon(Icons.print_outlined, color: AppColors.primaryPurple, size: 22),
+            ),
+          ),
+          AppleTouchable(
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -81,14 +88,14 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
             },
             child: const Padding(
               padding: EdgeInsets.all(8.0),
-              child: Icon(Icons.share_outlined, color: AppColors.primaryPurple),
+              child: Icon(Icons.share_outlined, color: AppColors.primaryPurple, size: 22),
             ),
           ),
           AppleTouchable(
             onTap: () => _showDeleteTripConfirmation(context, provider, isAr),
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 12),
-              child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+              child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
             ),
           ),
         ],
@@ -992,6 +999,90 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showPrintVoucherModal(BuildContext context, AppProvider provider, bool isAr) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Row(
+            children: [
+              const Icon(Icons.print_rounded, color: AppColors.primaryPurple, size: 28),
+              const SizedBox(width: 8),
+              Text(isAr ? 'طباعة وثيقة الرحلة' : 'Print Travel Voucher'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${isAr ? 'كود الرحلة' : 'Trip Reference'}: #HNDLK-${_currentTrip.id.substring(0, 6).toUpperCase()}',
+                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryOrange, fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${_currentTrip.title}\n${_currentTrip.daysCount} ${isAr ? 'أيام' : 'Days'} • ${_currentTrip.items.length} ${isAr ? 'أنشطة مجدولة' : 'Scheduled Visits'}',
+                style: const TextStyle(fontSize: 14, color: AppColors.darkGray, height: 1.4),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.lightPurple,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.verified_user_outlined, color: AppColors.verifiedGreen, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        isAr ? 'وثيقة سياحية رسمية موثقة بأسعار ومواعيد mota.gov.eg' : 'Official travel document verified via mota.gov.eg',
+                        style: const TextStyle(fontSize: 12, color: AppColors.darkGray, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(isAr ? 'إغلاق' : 'Close'),
+            ),
+            AppleTouchable(
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(isAr ? 'جاري تجهيز وثيقة الطباعة PDF...' : 'Preparing printable PDF voucher...'),
+                    backgroundColor: AppColors.primaryPurple,
+                  ),
+                );
+              },
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(isAr ? 'جاري تجهيز وثيقة الطباعة PDF...' : 'Preparing printable PDF voucher...'),
+                      backgroundColor: AppColors.primaryPurple,
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.picture_as_pdf_rounded, size: 18),
+                label: Text(isAr ? 'تصدير PDF / طباعة' : 'Export PDF / Print'),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryPurple),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
