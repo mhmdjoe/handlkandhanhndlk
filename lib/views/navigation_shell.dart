@@ -242,6 +242,7 @@ class _NavigationShellState extends State<NavigationShell> {
                                         activeDisplayIndex == i,
                                         _currentIndex == i,
                                         loc,
+                                        constraints.maxWidth < 340,
                                       ),
                                   ],
                                 ),
@@ -261,7 +262,7 @@ class _NavigationShellState extends State<NavigationShell> {
     );
   }
 
-  Widget _buildNavItemTile(_NavItemData item, bool isHighlighted, bool isSelected, AppLocalizations loc) {
+  Widget _buildNavItemTile(_NavItemData item, bool isHighlighted, bool isSelected, AppLocalizations loc, bool isCompactMobile) {
     return Expanded(
       child: Center(
         child: AnimatedScale(
@@ -276,7 +277,7 @@ class _NavigationShellState extends State<NavigationShell> {
                 color: isHighlighted ? Colors.white : Colors.white70,
                 size: 22,
               ),
-              if (isHighlighted) ...[
+              if (isHighlighted && !isCompactMobile) ...[
                 const SizedBox(width: 6),
                 AnimatedOpacity(
                   duration: AppDurations.fast,
