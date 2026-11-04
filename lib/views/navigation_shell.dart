@@ -176,73 +176,79 @@ class _NavigationShellState extends State<NavigationShell> {
                   ),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final tabWidth = constraints.maxWidth / navItems.length;
+                      const double barPadding = 12.0; // Inset padding away from edges
+                      final double availableWidth = constraints.maxWidth - (barPadding * 2);
+                      final double tabWidth = availableWidth / navItems.length;
+                      final double pillWidth = (tabWidth - 10.0).clamp(48.0, 92.0);
                       final activeDisplayIndex = _hoverIndex ?? _currentIndex;
 
-                      final double targetLeft = (isAr
+                      final double targetLeft = barPadding + (isAr
                           ? (navItems.length - 1 - activeDisplayIndex) * tabWidth
-                          : activeDisplayIndex * tabWidth) + 8;
+                          : activeDisplayIndex * tabWidth) + (tabWidth - pillWidth) / 2;
 
-                      return Stack(
-                        children: [
-                          // 1. Sliding Orange Active Pill Shape (Restored Compact Dimensions)
-                          AnimatedPositioned(
-                            duration: const Duration(milliseconds: 180),
-                            curve: AppCurves.springSnappy,
-                            left: targetLeft,
-                            top: 14,
-                            width: tabWidth - 16,
-                            height: 44,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryOrange,
-                                borderRadius: BorderRadius.circular(22),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.primaryOrange.withValues(alpha: 0.45),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          // 2. Interactive Real-Time Mouse Hover & Touch Gestures Layer
-                          MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            onHover: (event) => _handlePointerHover(event.localPosition.dx, constraints.maxWidth, isAr),
-                            onExit: (_) => setState(() => _hoverIndex = null),
-                            child: GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTapDown: (details) {
-                                const numTabs = 5;
-                                final width = constraints.maxWidth;
-                                final w = width / numTabs;
-                                int rawIndex = (details.localPosition.dx / w).floor().clamp(0, numTabs - 1);
-                                int targetIndex = isAr ? (numTabs - 1 - rawIndex) : rawIndex;
-                                _onTabChanged(targetIndex);
-                              },
-                              onPanUpdate: (details) => _handlePointerHover(details.localPosition.dx, constraints.maxWidth, isAr),
-                              onPanEnd: (_) {
-                                if (_hoverIndex != null) {
-                                  _onTabChanged(_hoverIndex!);
-                                }
-                              },
-                              child: Row(
-                                children: [
-                                  for (int i = 0; i < navItems.length; i++)
-                                    _buildNavItemTile(
-                                      navItems[i],
-                                      activeDisplayIndex == i,
-                                      _currentIndex == i,
-                                      loc,
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: barPadding),
+                        child: Stack(
+                          children: [
+                            // 1. Sliding Orange Active Pill Shape (Minimized & Inset from Edges)
+                            AnimatedPositioned(
+                              duration: const Duration(milliseconds: 180),
+                              curve: AppCurves.springSnappy,
+                              left: targetLeft - barPadding,
+                              top: 15,
+                              width: pillWidth,
+                              height: 42,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryOrange,
+                                  borderRadius: BorderRadius.circular(21),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.primaryOrange.withValues(alpha: 0.45),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
                                     ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+
+                            // 2. Interactive Real-Time Mouse Hover & Touch Gestures Layer
+                            MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              onHover: (event) => _handlePointerHover(event.localPosition.dx, constraints.maxWidth, isAr),
+                              onExit: (_) => setState(() => _hoverIndex = null),
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTapDown: (details) {
+                                  const numTabs = 5;
+                                  final width = constraints.maxWidth;
+                                  final w = width / numTabs;
+                                  int rawIndex = (details.localPosition.dx / w).floor().clamp(0, numTabs - 1);
+                                  int targetIndex = isAr ? (numTabs - 1 - rawIndex) : rawIndex;
+                                  _onTabChanged(targetIndex);
+                                },
+                                onPanUpdate: (details) => _handlePointerHover(details.localPosition.dx, constraints.maxWidth, isAr),
+                                onPanEnd: (_) {
+                                  if (_hoverIndex != null) {
+                                    _onTabChanged(_hoverIndex!);
+                                  }
+                                },
+                                child: Row(
+                                  children: [
+                                    for (int i = 0; i < navItems.length; i++)
+                                      _buildNavItemTile(
+                                        navItems[i],
+                                        activeDisplayIndex == i,
+                                        _currentIndex == i,
+                                        loc,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       );
                     },
                   ),
