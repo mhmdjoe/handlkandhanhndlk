@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_provider.dart';
 import '../../data/tourism_database.dart';
+import '../../models/models.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_motion.dart';
@@ -180,124 +182,179 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
 
                       return StaggeredEntranceItem(
                         index: index,
-                        child: AppleTouchable(
-                          pressedScale: 0.97,
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              AppCupertinoPageRoute(
-                                page: ItineraryDetailScreen(trip: trip),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          child: Dismissible(
+                            key: Key(trip.id),
+                            direction: DismissDirection.endToStart,
+                            confirmDismiss: (direction) async {
+                              HapticFeedback.mediumImpact();
+                              return await _showConfirmDeleteDialog(context, provider, trip, isAr);
+                            },
+                            onDismissed: (direction) {
+                              provider.removeTrip(trip.id);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(isAr ? 'تم حذف الرحلة' : 'Trip deleted'),
+                                  action: SnackBarAction(
+                                    label: isAr ? 'تراجع' : 'Undo',
+                                    textColor: AppColors.papyrusGold,
+                                    onPressed: () => provider.addTrip(trip),
+                                  ),
+                                ),
+                              );
+                            },
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 16),
+                              color: Colors.transparent,
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.redAccent.withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.delete_forever_rounded,
+                                  color: Colors.redAccent,
+                                  size: 26,
+                                ),
                               ),
-                            );
-                          },
-                          child: Card(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Stack(
+                            ),
+                            child: AppleTouchable(
+                              pressedScale: 0.97,
+                              borderRadius: BorderRadius.circular(20),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  AppCupertinoPageRoute(
+                                    page: ItineraryDetailScreen(trip: trip),
+                                  ),
+                                );
+                              },
+                              child: Card(
+                                margin: EdgeInsets.zero,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    SafeNetworkImage(
-                                      imageUrl: trip.coverImageUrl,
-                                      height: 140,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                                    ),
-                                    Container(
-                                      height: 140,
-                                      decoration: BoxDecoration(
-                                        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                                        gradient: LinearGradient(
-                                          colors: [Colors.black.withValues(alpha: 0.70), Colors.transparent],
-                                          begin: Alignment.bottomCenter,
-                                          end: Alignment.topCenter,
+                                    Stack(
+                                      children: [
+                                        SafeNetworkImage(
+                                          imageUrl: trip.coverImageUrl,
+                                          height: 140,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                                         ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 12,
-                                      right: 12,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: trip.status == 'Active Journey'
-                                              ? AppColors.primaryOrange
-                                              : AppColors.primaryPurple,
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Text(
-                                          trip.status,
-                                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      bottom: 12,
-                                      left: 12,
-                                      right: 12,
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            trip.title,
-                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17, letterSpacing: -0.2),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                        Container(
+                                          height: 140,
+                                          decoration: BoxDecoration(
+                                            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                                            gradient: LinearGradient(
+                                              colors: [Colors.black.withValues(alpha: 0.70), Colors.transparent],
+                                              begin: Alignment.bottomCenter,
+                                              end: Alignment.topCenter,
+                                            ),
                                           ),
-                                          Text(
-                                            '${isAr ? dest.nameAr : dest.nameEn} • ${trip.daysCount} ${loc.translate('days')}',
-                                            style: const TextStyle(color: AppColors.papyrusGold, fontSize: 12, fontWeight: FontWeight.w600),
+                                        ),
+                                        Positioned(
+                                          top: 12,
+                                          right: 12,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: trip.status == 'Active Journey'
+                                                  ? AppColors.primaryOrange
+                                                  : AppColors.primaryPurple,
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              trip.status,
+                                              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ),
+                                        Positioned(
+                                          bottom: 12,
+                                          left: 12,
+                                          right: 12,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                trip.title,
+                                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17, letterSpacing: -0.2),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              Text(
+                                                '${isAr ? dest.nameAr : dest.nameEn} • ${trip.daysCount} ${loc.translate('days')}',
+                                                style: const TextStyle(color: AppColors.papyrusGold, fontSize: 12, fontWeight: FontWeight.w600),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(14),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.event_outlined, size: 16, color: AppColors.mediumGray),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '${trip.startDate.day}/${trip.startDate.month}/${trip.startDate.year}',
+                                                style: const TextStyle(fontSize: 12, color: AppColors.darkGray, fontWeight: FontWeight.w500),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              AppleTouchable(
+                                                pressedScale: 0.85,
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    AppCupertinoPageRoute(
+                                                      page: const InteractiveMapScreen(),
+                                                    ),
+                                                  );
+                                                },
+                                                child: const Padding(
+                                                  padding: EdgeInsets.all(6),
+                                                  child: Icon(Icons.map_outlined, color: AppColors.primaryPurple, size: 22),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              AppleTouchable(
+                                                pressedScale: 0.85,
+                                                onTap: () async {
+                                                  final confirmed = await _showConfirmDeleteDialog(context, provider, trip, isAr);
+                                                  if (confirmed == true) {
+                                                    provider.removeTrip(trip.id);
+                                                  }
+                                                },
+                                                child: const Padding(
+                                                  padding: EdgeInsets.all(6),
+                                                  child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                provider.formatPrice(trip.totalCostEgp, trip.totalCostUsd),
+                                                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryOrange, fontSize: 15),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
                                     ),
                                   ],
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.all(14),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          const Icon(Icons.event_outlined, size: 16, color: AppColors.mediumGray),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            '${trip.startDate.day}/${trip.startDate.month}/${trip.startDate.year}',
-                                            style: const TextStyle(fontSize: 12, color: AppColors.darkGray, fontWeight: FontWeight.w500),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          AppleTouchable(
-                                            pressedScale: 0.85,
-                                            onTap: () {
-                                              Navigator.push(
-                                                context,
-                                                AppCupertinoPageRoute(
-                                                  page: const InteractiveMapScreen(),
-                                                ),
-                                              );
-                                            },
-                                            child: const Padding(
-                                              padding: EdgeInsets.all(6),
-                                              child: Icon(Icons.map_outlined, color: AppColors.primaryPurple, size: 22),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            provider.formatPrice(trip.totalCostEgp, trip.totalCostUsd),
-                                            style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryOrange, fontSize: 15),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
@@ -307,6 +364,37 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<bool?> _showConfirmDeleteDialog(BuildContext context, AppProvider provider, Trip trip, bool isAr) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Text(isAr ? 'حذف الرحلة؟' : 'Delete Trip?'),
+          content: Text(
+            isAr
+                ? 'هل أنت تأكد من رغبتك في حذف "${trip.title}" نهائياً من رحلاتك؟'
+                : 'Are you sure you want to permanently delete "${trip.title}" from your saved trips?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(isAr ? 'إلغاء' : 'Cancel'),
+            ),
+            AppleTouchable(
+              onTap: () => Navigator.pop(context, true),
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                child: Text(isAr ? 'حذف الرحلة' : 'Delete Trip'),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
