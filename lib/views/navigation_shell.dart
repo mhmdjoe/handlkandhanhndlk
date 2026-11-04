@@ -6,7 +6,6 @@ import '../providers/app_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_motion.dart';
-import '../widgets/apple_touchable.dart';
 import 'home/home_screen.dart';
 import 'explore/explore_screen.dart';
 import 'planner/ai_assistant_screen.dart';
@@ -24,17 +23,49 @@ class NavigationShell extends StatefulWidget {
 
 class _NavigationShellState extends State<NavigationShell> {
   late int _currentIndex;
+  late PageController _pageController;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onTabChanged(int index) {
+    if (_currentIndex != index) {
+      HapticFeedback.selectionClick();
+      setState(() => _currentIndex = index);
+      _pageController.animateToPage(
+        index,
+        duration: AppDurations.medium,
+        curve: AppCurves.springSnappy,
+      );
+    }
+  }
+
+  void _handleSliderTouch(double localX, double totalWidth, bool isRtl) {
+    if (totalWidth <= 0) return;
+    final numTabs = 5;
+    final tabWidth = totalWidth / numTabs;
+    int rawIndex = (localX / tabWidth).floor().clamp(0, numTabs - 1);
+
+    // In RTL, rightmost is index 0
+    int targetIndex = isRtl ? (numTabs - 1 - rawIndex) : rawIndex;
+    _onTabChanged(targetIndex);
   }
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     final appProvider = Provider.of<AppProvider>(context);
+    final isAr = appProvider.isArabic;
 
     final screens = [
       HomeScreen(
@@ -79,29 +110,17 @@ class _NavigationShellState extends State<NavigationShell> {
     return Scaffold(
       extendBody: true, // Content flows seamlessly under the glassmorphic bar
       body: Directionality(
-        textDirection: appProvider.isArabic ? TextDirection.rtl : TextDirection.ltr,
-        child: AnimatedSwitcher(
-          duration: AppDurations.medium,
-          switchInCurve: AppCurves.appleEase,
-          switchOutCurve: AppCurves.appleEase,
-          transitionBuilder: (child, animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: ScaleTransition(
-                scale: Tween<double>(begin: 0.98, end: 1.0).animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: AppCurves.springSnappy,
-                  ),
-                ),
-                child: child,
-              ),
-            );
+        textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+        child: PageView(
+          controller: _pageController,
+          physics: const BouncingScrollPhysics(),
+          onPageChanged: (index) {
+            if (_currentIndex != index) {
+              HapticFeedback.selectionClick();
+              setState(() => _currentIndex = index);
+            }
           },
-          child: KeyedSubtree(
-            key: ValueKey<int>(_currentIndex),
-            child: screens[_currentIndex],
-          ),
+          children: screens,
         ),
       ),
       bottomNavigationBar: SafeArea(
@@ -138,70 +157,92 @@ class _NavigationShellState extends State<NavigationShell> {
                       width: 1.2,
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: List.generate(navItems.length, (index) {
-                      final item = navItems[index];
-                      final isSelected = _currentIndex == index;
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final tabWidth = constraints.maxWidth / navItems.length;
+                      final double targetLeft = isAr
+                          ? (navItems.length - 1 - _currentIndex) * tabWidth
+                          : _currentIndex * tabWidth;
 
-                      return AppleTouchable(
-                        enableHaptics: false, // Custom haptics handled in _onTabChanged
-                        onTap: () => _onTabChanged(index),
-                        pressedScale: 0.90,
-                        child: AnimatedContainer(
-                          duration: AppDurations.medium,
-                          curve: AppCurves.springSnappy,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isSelected ? 16 : 10,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.primaryOrange : Colors.transparent,
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: isSelected
-                                ? [
-                                    BoxShadow(
-                                      color: AppColors.primaryOrange.withValues(alpha: 0.45),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              AnimatedScale(
-                                scale: isSelected ? 1.15 : 1.0,
-                                duration: AppDurations.fast,
-                                curve: AppCurves.springBouncy,
-                                child: Icon(
-                                  isSelected ? item.activeIcon : item.icon,
-                                  color: isSelected ? Colors.white : Colors.white70,
-                                  size: 22,
-                                ),
+                      return Stack(
+                        children: [
+                          // 1. Sliding Orange Active Pill Shape
+                          AnimatedPositioned(
+                            duration: AppDurations.medium,
+                            curve: AppCurves.springSnappy,
+                            left: targetLeft + 4,
+                            top: 8,
+                            width: tabWidth - 8,
+                            height: 56,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryOrange,
+                                borderRadius: BorderRadius.circular(28),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primaryOrange.withValues(alpha: 0.50),
+                                    blurRadius: 14,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              if (isSelected) ...[
-                                const SizedBox(width: 8),
-                                AnimatedOpacity(
-                                  duration: AppDurations.fast,
-                                  opacity: isSelected ? 1.0 : 0.0,
-                                  child: Text(
-                                    loc.translate(item.labelKey),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                      letterSpacing: -0.2,
+                            ),
+                          ),
+
+                          // 2. Interactive Slider Touch Layer + Tabs
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onPanDown: (details) => _handleSliderTouch(details.localPosition.dx, constraints.maxWidth, isAr),
+                            onPanUpdate: (details) => _handleSliderTouch(details.localPosition.dx, constraints.maxWidth, isAr),
+                            child: Row(
+                              children: List.generate(navItems.length, (index) {
+                                final item = navItems[index];
+                                final isSelected = _currentIndex == index;
+
+                                return Expanded(
+                                  child: MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: Center(
+                                      child: AnimatedScale(
+                                        scale: isSelected ? 1.08 : 1.0,
+                                        duration: AppDurations.fast,
+                                        curve: AppCurves.springBouncy,
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              isSelected ? item.activeIcon : item.icon,
+                                              color: isSelected ? Colors.white : Colors.white70,
+                                              size: 22,
+                                            ),
+                                            if (isSelected) ...[
+                                              const SizedBox(width: 6),
+                                              AnimatedOpacity(
+                                                duration: AppDurations.fast,
+                                                opacity: isSelected ? 1.0 : 0.0,
+                                                child: Text(
+                                                  loc.translate(item.labelKey),
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 13,
+                                                    letterSpacing: -0.2,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ],
+                                );
+                              }),
+                            ),
                           ),
-                        ),
+                        ],
                       );
-                    }),
+                    },
                   ),
                 ),
               ),
@@ -210,13 +251,6 @@ class _NavigationShellState extends State<NavigationShell> {
         ),
       ),
     );
-  }
-
-  void _onTabChanged(int index) {
-    if (_currentIndex != index) {
-      HapticFeedback.selectionClick();
-      setState(() => _currentIndex = index);
-    }
   }
 }
 
