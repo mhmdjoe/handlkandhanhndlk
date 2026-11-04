@@ -75,6 +75,24 @@ class _NavigationShellState extends State<NavigationShell> {
     }
   }
 
+  double _calculatePillWidth(String text, bool isRtl, double maxTabSlotWidth) {
+    const TextStyle style = TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 13,
+      letterSpacing: -0.2,
+    );
+
+    final TextPainter painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      maxLines: 1,
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+    )..layout();
+
+    // Icon size (22) + gap (6) + text width + padding (28)
+    double neededWidth = 22.0 + 6.0 + painter.width + 28.0;
+    return neededWidth.clamp(52.0, maxTabSlotWidth + 14.0);
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
@@ -176,37 +194,41 @@ class _NavigationShellState extends State<NavigationShell> {
                   ),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      const double barPadding = 12.0; // Inset padding away from edges
+                      const double barPadding = 12.0;
                       final double availableWidth = constraints.maxWidth - (barPadding * 2);
                       final double tabWidth = availableWidth / navItems.length;
-                      final double pillWidth = (tabWidth - 10.0).clamp(48.0, 92.0);
-                      final activeDisplayIndex = _hoverIndex ?? _currentIndex;
 
-                      final double targetLeft = barPadding + (isAr
+                      final activeDisplayIndex = _hoverIndex ?? _currentIndex;
+                      final String activeLabelText = loc.translate(navItems[activeDisplayIndex].labelKey);
+                      final double pillWidth = _calculatePillWidth(activeLabelText, isAr, tabWidth);
+
+                      final double slotCenter = barPadding + (isAr
                           ? (navItems.length - 1 - activeDisplayIndex) * tabWidth
-                          : activeDisplayIndex * tabWidth) + (tabWidth - pillWidth) / 2;
+                          : activeDisplayIndex * tabWidth) + tabWidth / 2;
+
+                      final double targetLeft = slotCenter - pillWidth / 2;
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: barPadding),
                         child: Stack(
                           children: [
-                            // 1. Sliding Orange Active Pill Shape (Minimized & Inset from Edges)
+                            // 1. Sliding Orange Active Pill Shape (Adapts to Active Word Size)
                             AnimatedPositioned(
-                              duration: const Duration(milliseconds: 180),
+                              duration: const Duration(milliseconds: 200),
                               curve: AppCurves.springSnappy,
                               left: targetLeft - barPadding,
-                              top: 15,
+                              top: 14,
                               width: pillWidth,
-                              height: 42,
+                              height: 44,
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: AppColors.primaryOrange,
-                                  borderRadius: BorderRadius.circular(21),
+                                  borderRadius: BorderRadius.circular(22),
                                   boxShadow: [
                                     BoxShadow(
                                       color: AppColors.primaryOrange.withValues(alpha: 0.45),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
                                     ),
                                   ],
                                 ),
