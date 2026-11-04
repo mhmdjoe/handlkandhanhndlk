@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../data/tourism_database.dart';
 import '../providers/app_provider.dart';
-import '../services/itinerary_engine.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_motion.dart';
@@ -54,40 +53,74 @@ class _AddToTripModalState extends State<AddToTripModal> {
     super.dispose();
   }
 
+  String _getAttractionName(String id, bool isAr) {
+    final attraction = TourismDatabase.attractions.firstWhere(
+      (a) => a.id == id,
+      orElse: () => widget.attraction,
+    );
+    return isAr ? attraction.nameAr : attraction.nameEn;
+  }
+
+  ItineraryItem? _findConflictingItem(Trip? targetTrip) {
+    if (targetTrip == null || targetTrip.items.isEmpty) return null;
+
+    int newStartHour = int.tryParse(_selectedTimeSlot.split(':')[0]) ?? 9;
+
+    for (var item in targetTrip.items) {
+      if (item.dayNumber == _selectedDay) {
+        int itemStartHour = int.tryParse(item.startTime.split(':')[0]) ?? 9;
+        int itemEndHour = int.tryParse(item.endTime.split(':')[0]) ?? (itemStartHour + 2);
+
+        if (newStartHour >= itemStartHour && newStartHour < itemEndHour) {
+          return item;
+        }
+      }
+    }
+    return null;
+  }
+
   void _onConfirmAdd(AppProvider provider, Attraction a, List<Trip> userTrips) {
     Trip updatedTrip;
+
+    int startHour = int.tryParse(_selectedTimeSlot.split(':')[0]) ?? 9;
+    int durationHours = (a.estimatedDurationMinutes / 60).clamp(1, 3).toInt();
+    int endHour = startHour + durationHours;
+    String endTimeStr = '${endHour.toString().padLeft(2, '0')}:00';
+
+    final newItem = ItineraryItem(
+      id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+      attractionId: a.id,
+      dayNumber: _selectedDay,
+      startTime: _selectedTimeSlot,
+      endTime: endTimeStr,
+      notes: 'Manually added by user from Explore',
+    );
+
     if (_selectedTripId == 'new') {
       final dest = TourismDatabase.destinations.firstWhere(
         (d) => d.id == a.destinationId,
         orElse: () => TourismDatabase.destinations.first,
       );
 
-      final newTrip = ItineraryEngine.generateAutoTrip(
+      final newTrip = Trip(
+        id: 'trip_${DateTime.now().millisecondsSinceEpoch}',
         title: _newTripTitleController.text.trim().isNotEmpty
             ? _newTripTitleController.text.trim()
             : 'Handelak ${dest.nameEn} Journey',
         destinationId: a.destinationId,
-        attractionIds: [a.id],
         startDate: DateTime.now().add(const Duration(days: 3)),
+        endDate: DateTime.now().add(Duration(days: _newTripDays + 3)),
         daysCount: _newTripDays,
+        items: [newItem], // ONLY the manually selected place
+        totalCostEgp: a.priceEgp * _newTripTravelers,
+        totalCostUsd: a.priceUsd * _newTripTravelers,
         travelerCount: _newTripTravelers,
+        status: 'Active Journey',
       );
+
       provider.addTrip(newTrip);
       updatedTrip = newTrip;
     } else {
-      int startHour = int.tryParse(_selectedTimeSlot.split(':')[0]) ?? 9;
-      int endHour = startHour + (a.estimatedDurationMinutes / 60).clamp(1, 3).toInt();
-      String endTimeStr = '${endHour.toString().padLeft(2, '0')}:00';
-
-      final newItem = ItineraryItem(
-        id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-        attractionId: a.id,
-        dayNumber: _selectedDay,
-        startTime: _selectedTimeSlot,
-        endTime: endTimeStr,
-        notes: 'Added from Explore screen',
-      );
-
       final existingTrip = userTrips.firstWhere((t) => t.id == _selectedTripId);
       final updatedItems = List<ItineraryItem>.from(existingTrip.items)..add(newItem);
 
@@ -98,8 +131,8 @@ class _AddToTripModalState extends State<AddToTripModal> {
           (att) => att.id == item.attractionId,
           orElse: () => a,
         );
-        totalEgp += itemAttraction.priceEgp;
-        totalUsd += itemAttraction.priceUsd;
+        totalEgp += itemAttraction.priceEgp * existingTrip.travelerCount;
+        totalUsd += itemAttraction.priceUsd * existingTrip.travelerCount;
       }
 
       updatedTrip = Trip(
@@ -136,22 +169,12 @@ class _AddToTripModalState extends State<AddToTripModal> {
 
     _selectedTripId ??= userTrips.isNotEmpty ? userTrips.first.id : 'new';
 
-    final targetTrip = userTrips.firstWhere(
-      (t) => t.id == _selectedTripId,
-      orElse: () => Trip(
-        id: 'new',
-        title: _newTripTitleController.text,
-        destinationId: a.destinationId,
-        startDate: DateTime.now(),
-        endDate: DateTime.now().add(Duration(days: _newTripDays)),
-        daysCount: _newTripDays,
-        items: [],
-        totalCostEgp: 0,
-        totalCostUsd: 0,
-      ),
-    );
+    final targetTrip = _selectedTripId == 'new'
+        ? null
+        : userTrips.firstWhere((t) => t.id == _selectedTripId, orElse: () => userTrips.first);
 
-    final maxDaysForSelectedTrip = _selectedTripId == 'new' ? _newTripDays : targetTrip.daysCount;
+    final maxDaysForSelectedTrip = _selectedTripId == 'new' ? _newTripDays : (targetTrip?.daysCount ?? 3);
+    final conflictingItem = _findConflictingItem(targetTrip);
 
     return Container(
       padding: EdgeInsets.only(
@@ -317,7 +340,7 @@ class _AddToTripModalState extends State<AddToTripModal> {
                     pressedScale: 0.92,
                     onTap: () => setState(() => _selectedTripId = 'new'),
                     child: ChoiceChip(
-                      label: Text(isAr ? '+ رحلة جديدة' : '+ Create New Trip'),
+                      label: Text(isAr ? '+ رحلة جديدة يدوية' : '+ New Blank Trip'),
                       selected: _selectedTripId == 'new',
                       onSelected: null,
                       selectedColor: AppColors.primaryOrange,
@@ -417,6 +440,44 @@ class _AddToTripModalState extends State<AddToTripModal> {
                 );
               }).toList(),
             ),
+
+            // Time Conflict Warning Banner
+            if (conflictingItem != null) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.alertAmber, width: 1.5),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.warning_amber_rounded, color: AppColors.alertAmber, size: 28),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isAr ? 'تعارض في الموعد المجدول!' : 'Time Slot Conflict Warning!',
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.alertAmber, fontSize: 13),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            isAr
+                                ? 'يوجد مكان آخر (${_getAttractionName(conflictingItem.attractionId, isAr)}) مجدول بالفعل في اليوم $_selectedDay الساعة $_selectedTimeSlot.'
+                                : '${_getAttractionName(conflictingItem.attractionId, isAr)} is already scheduled on Day $_selectedDay at $_selectedTimeSlot.',
+                            style: const TextStyle(color: AppColors.darkGray, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             const SizedBox(height: 24),
 
             // Confirm Button
@@ -426,10 +487,12 @@ class _AddToTripModalState extends State<AddToTripModal> {
                 onPressed: () => _onConfirmAdd(provider, a, userTrips),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
-                  backgroundColor: AppColors.primaryPurple,
+                  backgroundColor: conflictingItem != null ? AppColors.alertAmber : AppColors.primaryPurple,
                 ),
                 child: Text(
-                  loc.translate('confirmAdd'),
+                  conflictingItem != null
+                      ? (isAr ? 'إضافة رغم التعارض الزمني' : 'Add Anyway (Resolve Conflict)')
+                      : loc.translate('confirmAdd'),
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
