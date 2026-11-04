@@ -52,8 +52,11 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: Column(
+            children: [
           // Status Filter Chips
           if (allTrips.isNotEmpty)
             SizedBox(
@@ -199,8 +202,10 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 
   Future<bool?> _showConfirmDeleteDialog(BuildContext context, AppProvider provider, Trip trip, bool isAr) {
     return showDialog<bool>(

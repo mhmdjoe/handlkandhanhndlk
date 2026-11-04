@@ -322,7 +322,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Must-Try Experiences
+                  // Must-Try Experiences (Responsive Apple Editorial Grid)
                   StaggeredEntranceItem(
                     index: 5,
                     child: Text(
@@ -332,13 +332,43 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  ...List.generate(TourismDatabase.attractions.take(6).length, (index) {
-                    final attraction = TourismDatabase.attractions[index];
-                    return StaggeredEntranceItem(
-                      index: 6 + index,
-                      child: _buildAttractionCard(context, attraction, appProvider, loc, isAr),
-                    );
-                  }),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final topExperiences = TourismDatabase.attractions.take(6).toList();
+                      final isWide = constraints.maxWidth > 700;
+
+                      if (isWide) {
+                        return GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 1.25,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                          ),
+                          itemCount: topExperiences.length,
+                          itemBuilder: (context, index) {
+                            final attraction = topExperiences[index];
+                            return StaggeredEntranceItem(
+                              index: 6 + index,
+                              child: _buildAttractionCard(context, attraction, appProvider, loc, isAr),
+                            );
+                          },
+                        );
+                      }
+
+                      return Column(
+                        children: List.generate(topExperiences.length, (index) {
+                          final attraction = topExperiences[index];
+                          return StaggeredEntranceItem(
+                            index: 6 + index,
+                            child: _buildAttractionCard(context, attraction, appProvider, loc, isAr),
+                          );
+                        }),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
