@@ -181,26 +181,26 @@ class _NavigationShellState extends State<NavigationShell> {
 
                       final double targetLeft = (isAr
                           ? (navItems.length - 1 - activeDisplayIndex) * tabWidth
-                          : activeDisplayIndex * tabWidth) + 4;
+                          : activeDisplayIndex * tabWidth) + 8;
 
                       return Stack(
                         children: [
-                          // 1. Sliding Orange Active Pill Shape
+                          // 1. Sliding Orange Active Pill Shape (Restored Compact Dimensions)
                           AnimatedPositioned(
                             duration: const Duration(milliseconds: 180),
                             curve: AppCurves.springSnappy,
                             left: targetLeft,
-                            top: 8,
-                            width: tabWidth - 8,
-                            height: 56,
+                            top: 14,
+                            width: tabWidth - 16,
+                            height: 44,
                             child: Container(
                               decoration: BoxDecoration(
                                 color: AppColors.primaryOrange,
-                                borderRadius: BorderRadius.circular(28),
+                                borderRadius: BorderRadius.circular(22),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primaryOrange.withValues(alpha: 0.50),
-                                    blurRadius: 14,
+                                    color: AppColors.primaryOrange.withValues(alpha: 0.45),
+                                    blurRadius: 12,
                                     offset: const Offset(0, 4),
                                   ),
                                 ],
