@@ -349,21 +349,29 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                   children: [
                     Text(
                       isAr ? 'خيار الإقامة والفندق' : 'Hotel Accommodation',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primaryPurple),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primaryPurple, letterSpacing: -0.2),
                     ),
-                    DropdownButton<String>(
-                      value: _selectedHotelBudget,
-                      items: ['Moderate', 'Luxury', 'Budget', 'Eco Lodge', 'No Hotel Needed'].map((tier) {
-                        return DropdownMenuItem(
-                          value: tier,
-                          child: Text(tier, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() => _selectedHotelBudget = val);
-                        }
-                      },
+                    AppleTouchable(
+                      pressedScale: 0.90,
+                      onTap: () => _showHotelPickerModal(context, provider, isAr),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.lightPurple,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.borderLight),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.hotel_rounded, size: 16, color: AppColors.primaryPurple),
+                            const SizedBox(width: 4),
+                            Text(
+                              isAr ? 'تغيير الفندق' : 'Change Hotel',
+                              style: const TextStyle(color: AppColors.primaryPurple, fontWeight: FontWeight.bold, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -387,12 +395,12 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                           children: [
                             Text(
                               isAr ? selectedHotel.nameAr : selectedHotel.nameEn,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: -0.2),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              '${selectedHotel.starRating} Stars • ${isAr ? selectedHotel.cityAr : selectedHotel.cityEn}',
+                              '${selectedHotel.starRating}★ • ${isAr ? selectedHotel.cityAr : selectedHotel.cityEn}',
                               style: const TextStyle(color: AppColors.mediumGray, fontSize: 12),
                             ),
                             const SizedBox(height: 4),
@@ -404,6 +412,14 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                         ),
                       ),
                     ],
+                  ),
+                ] else ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Text(
+                      isAr ? 'إقامة شخصية خاصة (بدون فندق)' : 'Personal Stay (No Hotel Selected)',
+                      style: const TextStyle(color: AppColors.mediumGray, fontStyle: FontStyle.italic, fontSize: 13),
+                    ),
                   ),
                 ],
               ],
@@ -751,6 +767,205 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                     backgroundColor: AppColors.primaryPurple,
                   ),
                   child: Text(isAr ? 'تم، العودة للرحلة' : 'Done & Return'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showHotelPickerModal(BuildContext context, AppProvider provider, bool isAr) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderLight,
+                    borderRadius: BorderRadius.circular(2.5),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                isAr ? 'اختر الفندق / مكان الإقامة' : 'Select Hotel & Accommodation',
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primaryPurple, letterSpacing: -0.3),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                isAr ? 'اختر الفندق المفضل لرحلتك أو اختر بدون فندق' : 'Choose your preferred hotel for this journey or select personal stay.',
+                style: const TextStyle(color: AppColors.mediumGray, fontSize: 13),
+              ),
+              const SizedBox(height: 16),
+
+              // Personal Stay Option
+              AppleTouchable(
+                pressedScale: 0.95,
+                onTap: () {
+                  final updatedTrip = Trip(
+                    id: _currentTrip.id,
+                    title: _currentTrip.title,
+                    destinationId: _currentTrip.destinationId,
+                    startDate: _currentTrip.startDate,
+                    endDate: _currentTrip.endDate,
+                    daysCount: _currentTrip.daysCount,
+                    travelerCount: _currentTrip.travelerCount,
+                    status: _currentTrip.status,
+                    items: _currentTrip.items,
+                    totalCostEgp: _currentTrip.totalCostEgp,
+                    totalCostUsd: _currentTrip.totalCostUsd,
+                    selectedHotelId: null,
+                    hotelBudgetTier: 'No Hotel Needed',
+                    customImageUrl: _currentTrip.customImageUrl,
+                  );
+                  provider.updateTrip(updatedTrip);
+                  setState(() {
+                    _currentTrip = updatedTrip;
+                    _selectedHotelBudget = 'No Hotel Needed';
+                  });
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: _selectedHotelBudget == 'No Hotel Needed' ? AppColors.lightPurple : AppColors.surfaceMuted,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: _selectedHotelBudget == 'No Hotel Needed' ? AppColors.primaryPurple : AppColors.borderLight,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.home_outlined, color: AppColors.primaryPurple, size: 28),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          isAr ? 'إقامة خاصة (بدون حجز فندق)' : 'Personal Stay (No Hotel Needed)',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.darkGray),
+                        ),
+                      ),
+                      if (_selectedHotelBudget == 'No Hotel Needed')
+                        const Icon(Icons.check_circle_rounded, color: AppColors.primaryPurple, size: 22),
+                    ],
+                  ),
+                ),
+              ),
+
+              const Divider(height: 20),
+
+              // Hotel List
+              Expanded(
+                child: ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: TourismDatabase.hotels.length,
+                  itemBuilder: (context, index) {
+                    final hotel = TourismDatabase.hotels[index];
+                    final isSelected = _currentTrip.selectedHotelId == hotel.id;
+
+                    return AppleTouchable(
+                      pressedScale: 0.96,
+                      onTap: () {
+                        final updatedTrip = Trip(
+                          id: _currentTrip.id,
+                          title: _currentTrip.title,
+                          destinationId: _currentTrip.destinationId,
+                          startDate: _currentTrip.startDate,
+                          endDate: _currentTrip.endDate,
+                          daysCount: _currentTrip.daysCount,
+                          travelerCount: _currentTrip.travelerCount,
+                          status: _currentTrip.status,
+                          items: _currentTrip.items,
+                          totalCostEgp: _currentTrip.totalCostEgp,
+                          totalCostUsd: _currentTrip.totalCostUsd,
+                          selectedHotelId: hotel.id,
+                          hotelBudgetTier: hotel.starRating >= 5 ? 'Luxury' : 'Moderate',
+                          customImageUrl: _currentTrip.customImageUrl,
+                        );
+                        provider.updateTrip(updatedTrip);
+                        setState(() {
+                          _currentTrip = updatedTrip;
+                          _selectedHotelBudget = hotel.starRating >= 5 ? 'Luxury' : 'Moderate';
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppColors.lightPurple : Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: isSelected ? AppColors.primaryOrange : AppColors.borderLight,
+                            width: isSelected ? 2.0 : 1.0,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: SafeNetworkImage(
+                                imageUrl: hotel.imageUrl,
+                                width: 75,
+                                height: 75,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isAr ? hotel.nameAr : hotel.nameEn,
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: -0.2),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${hotel.starRating}★ • ${isAr ? hotel.cityAr : hotel.cityEn}',
+                                    style: const TextStyle(color: AppColors.mediumGray, fontSize: 12),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${provider.formatPrice(hotel.pricePerNightEgp, hotel.pricePerNightUsd)} / night',
+                                    style: const TextStyle(color: AppColors.primaryOrange, fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (isSelected)
+                              const Icon(Icons.check_circle_rounded, color: AppColors.primaryOrange, size: 24),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
