@@ -54,6 +54,78 @@ class _AddToTripModalState extends State<AddToTripModal> {
     super.dispose();
   }
 
+  void _onConfirmAdd(AppProvider provider, Attraction a, List<Trip> userTrips) {
+    Trip updatedTrip;
+    if (_selectedTripId == 'new') {
+      final dest = TourismDatabase.destinations.firstWhere(
+        (d) => d.id == a.destinationId,
+        orElse: () => TourismDatabase.destinations.first,
+      );
+
+      final newTrip = ItineraryEngine.generateAutoTrip(
+        title: _newTripTitleController.text.trim().isNotEmpty
+            ? _newTripTitleController.text.trim()
+            : 'Handelak ${dest.nameEn} Journey',
+        destinationId: a.destinationId,
+        attractionIds: [a.id],
+        startDate: DateTime.now().add(const Duration(days: 3)),
+        daysCount: _newTripDays,
+        travelerCount: _newTripTravelers,
+      );
+      provider.addTrip(newTrip);
+      updatedTrip = newTrip;
+    } else {
+      int startHour = int.tryParse(_selectedTimeSlot.split(':')[0]) ?? 9;
+      int endHour = startHour + (a.estimatedDurationMinutes / 60).clamp(1, 3).toInt();
+      String endTimeStr = '${endHour.toString().padLeft(2, '0')}:00';
+
+      final newItem = ItineraryItem(
+        id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+        attractionId: a.id,
+        dayNumber: _selectedDay,
+        startTime: _selectedTimeSlot,
+        endTime: endTimeStr,
+        notes: 'Added from Explore screen',
+      );
+
+      final existingTrip = userTrips.firstWhere((t) => t.id == _selectedTripId);
+      final updatedItems = List<ItineraryItem>.from(existingTrip.items)..add(newItem);
+
+      double totalEgp = 0;
+      double totalUsd = 0;
+      for (var item in updatedItems) {
+        final itemAttraction = TourismDatabase.attractions.firstWhere(
+          (att) => att.id == item.attractionId,
+          orElse: () => a,
+        );
+        totalEgp += itemAttraction.priceEgp;
+        totalUsd += itemAttraction.priceUsd;
+      }
+
+      updatedTrip = Trip(
+        id: existingTrip.id,
+        title: existingTrip.title,
+        destinationId: existingTrip.destinationId,
+        startDate: existingTrip.startDate,
+        endDate: existingTrip.endDate,
+        daysCount: existingTrip.daysCount,
+        travelerCount: existingTrip.travelerCount,
+        status: existingTrip.status,
+        hotelBudgetTier: existingTrip.hotelBudgetTier,
+        selectedHotelId: existingTrip.selectedHotelId,
+        items: updatedItems,
+        totalCostEgp: totalEgp,
+        totalCostUsd: totalUsd,
+      );
+      provider.updateTrip(updatedTrip);
+    }
+
+    setState(() {
+      _isAdded = true;
+      _addedTrip = updatedTrip;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
@@ -349,79 +421,9 @@ class _AddToTripModalState extends State<AddToTripModal> {
 
             // Confirm Button
             AppleTouchable(
-              onTap: () {
-                Trip updatedTrip;
-                if (_selectedTripId == 'new') {
-                  final dest = TourismDatabase.destinations.firstWhere(
-                    (d) => d.id == a.destinationId,
-                    orElse: () => TourismDatabase.destinations.first,
-                  );
-
-                  final newTrip = ItineraryEngine.generateAutoTrip(
-                    title: _newTripTitleController.text.trim().isNotEmpty
-                        ? _newTripTitleController.text.trim()
-                        : 'Handelak ${dest.nameEn} Journey',
-                    destinationId: a.destinationId,
-                    attractionIds: [a.id],
-                    startDate: DateTime.now().add(const Duration(days: 3)),
-                    daysCount: _newTripDays,
-                    travelerCount: _newTripTravelers,
-                  );
-                  provider.addTrip(newTrip);
-                  updatedTrip = newTrip;
-                } else {
-                  int startHour = int.tryParse(_selectedTimeSlot.split(':')[0]) ?? 9;
-                  int endHour = startHour + (a.estimatedDurationMinutes / 60).clamp(1, 3).toInt();
-                  String endTimeStr = '${endHour.toString().padLeft(2, '0')}:00';
-
-                  final newItem = ItineraryItem(
-                    id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-                    attractionId: a.id,
-                    dayNumber: _selectedDay,
-                    startTime: _selectedTimeSlot,
-                    endTime: endTimeStr,
-                    notes: 'Added from Explore screen',
-                  );
-
-                  final existingTrip = userTrips.firstWhere((t) => t.id == _selectedTripId);
-                  final updatedItems = List<ItineraryItem>.from(existingTrip.items)..add(newItem);
-
-                  double totalEgp = 0;
-                  double totalUsd = 0;
-                  for (var item in updatedItems) {
-                    final itemAttraction = TourismDatabase.attractions.firstWhere(
-                      (att) => att.id == item.attractionId,
-                      orElse: () => a,
-                    );
-                    totalEgp += itemAttraction.priceEgp;
-                    totalUsd += itemAttraction.priceUsd;
-                  }
-
-                  updatedTrip = Trip(
-                    id: existingTrip.id,
-                    title: existingTrip.title,
-                    destinationId: existingTrip.destinationId,
-                    startDate: existingTrip.startDate,
-                    endDate: existingTrip.endDate,
-                    daysCount: existingTrip.daysCount,
-                    travelerCount: existingTrip.travelerCount,
-                    status: existingTrip.status,
-                    hotelBudgetTier: existingTrip.hotelBudgetTier,
-                    selectedHotelId: existingTrip.selectedHotelId,
-                    items: updatedItems,
-                    totalCostEgp: totalEgp,
-                    totalCostUsd: totalUsd,
-                  );
-                  provider.updateTrip(updatedTrip);
-                }
-
-                setState(() {
-                  _isAdded = true;
-                  _addedTrip = updatedTrip;
-                });
-              },
+              onTap: () => _onConfirmAdd(provider, a, userTrips),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () => _onConfirmAdd(provider, a, userTrips),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
                   backgroundColor: AppColors.primaryPurple,
