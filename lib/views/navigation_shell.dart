@@ -171,102 +171,107 @@ class _NavigationShellState extends State<NavigationShell> {
                   ),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      const double barPadding = 12.0;
-                      final double availableWidth = constraints.maxWidth - (barPadding * 2);
-                      final double tabWidth = availableWidth / navItems.length;
+                      final double barWidth = constraints.maxWidth;
+                      final double tabWidth = barWidth / navItems.length;
 
                       final String activeLabelText = loc.translate(navItems[_currentIndex].labelKey);
                       final double pillWidth = _calculatePillWidth(activeLabelText, isAr, tabWidth);
 
-                      final double slotCenter = barPadding + (isAr
-                          ? (navItems.length - 1 - _currentIndex) * tabWidth
-                          : _currentIndex * tabWidth) + tabWidth / 2;
+                      final double slotIndex = (isAr ? (navItems.length - 1 - _currentIndex) : _currentIndex).toDouble();
+                      final double slotCenter = (slotIndex + 0.5) * tabWidth;
 
-                      final double targetLeft = slotCenter - pillWidth / 2;
+                      final double idealLeft = slotCenter - pillWidth / 2;
+                      final double maxAllowedLeft = (barWidth - pillWidth - 6.0).clamp(6.0, barWidth);
+                      final double targetLeft = idealLeft.clamp(6.0, maxAllowedLeft);
 
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: barPadding),
-                        child: Stack(
-                          children: [
-                            // 1. Sliding Active Orange Shape (Bigger, Spacious & Prominent)
-                            AnimatedPositioned(
-                              duration: const Duration(milliseconds: 260),
-                              curve: AppCurves.springSnappy,
-                              left: targetLeft - barPadding,
-                              top: 10,
-                              width: pillWidth,
-                              height: 52,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryOrange,
-                                  borderRadius: BorderRadius.circular(26),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.primaryOrange.withValues(alpha: 0.52),
-                                      blurRadius: 14,
-                                      spreadRadius: 1,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
+                      return Stack(
+                        children: [
+                          // 1. Sliding Active Orange Shape (Safe Clamped Bounds, No Edge Clipping)
+                          AnimatedPositioned(
+                            duration: const Duration(milliseconds: 260),
+                            curve: AppCurves.springSnappy,
+                            left: targetLeft,
+                            top: 10,
+                            width: pillWidth,
+                            height: 52,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryOrange,
+                                borderRadius: BorderRadius.circular(26),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primaryOrange.withValues(alpha: 0.52),
+                                    blurRadius: 14,
+                                    spreadRadius: 1,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
                             ),
+                          ),
 
-                            // 2. Tab Icons & Text Buttons Layer
-                            Row(
-                              children: List.generate(navItems.length, (index) {
-                                final item = navItems[index];
-                                final isSelected = _currentIndex == index;
-
-                                return Expanded(
-                                  child: AppleTouchable(
-                                    enableHaptics: false,
-                                    pressedScale: 0.90,
-                                    onTap: () => _onTabChanged(index),
-                                    child: Center(
-                                      child: AnimatedScale(
-                                        scale: isSelected ? 1.06 : 1.0,
-                                        duration: AppDurations.fast,
-                                        curve: AppCurves.springBouncy,
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              isSelected ? item.activeIcon : item.icon,
-                                              color: isSelected ? Colors.white : Colors.white70,
-                                              size: 22,
-                                            ),
-                                            if (isSelected && constraints.maxWidth >= 340) ...[
-                                              const SizedBox(width: 6),
-                                              AnimatedOpacity(
-                                                duration: AppDurations.fast,
-                                                opacity: isSelected ? 1.0 : 0.0,
-                                                child: Text(
-                                                  loc.translate(item.labelKey),
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 13,
-                                                    letterSpacing: -0.2,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ),
-                          ],
-                        ),
+                          // 2. Tab Icons & Text Buttons Layer
+                          Row(
+                            children: [
+                              for (int i = 0; i < navItems.length; i++)
+                                _buildNavItemTile(
+                                  navItems[i],
+                                  i,
+                                  _currentIndex == i,
+                                  loc,
+                                  constraints.maxWidth < 340,
+                                ),
+                            ],
+                          ),
+                        ],
                       );
                     },
                   ),
                 ),
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItemTile(_NavItemData item, int index, bool isSelected, AppLocalizations loc, bool isCompactMobile) {
+    return Expanded(
+      child: AppleTouchable(
+        enableHaptics: false,
+        pressedScale: 0.90,
+        onTap: () => _onTabChanged(index),
+        child: Center(
+          child: AnimatedScale(
+            scale: isSelected ? 1.06 : 1.0,
+            duration: AppDurations.fast,
+            curve: AppCurves.springBouncy,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isSelected ? item.activeIcon : item.icon,
+                  color: isSelected ? Colors.white : Colors.white70,
+                  size: 22,
+                ),
+                if (isSelected && !isCompactMobile) ...[
+                  const SizedBox(width: 6),
+                  AnimatedOpacity(
+                    duration: AppDurations.fast,
+                    opacity: isSelected ? 1.0 : 0.0,
+                    child: Text(
+                      loc.translate(item.labelKey),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ),
