@@ -6,6 +6,7 @@ import '../providers/app_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_motion.dart';
+import '../widgets/apple_touchable.dart';
 import 'home/home_screen.dart';
 import 'explore/explore_screen.dart';
 import 'planner/ai_assistant_screen.dart';
@@ -25,10 +26,6 @@ class _NavigationShellState extends State<NavigationShell> {
   late int _currentIndex;
   late PageController _pageController;
 
-  // Real-time hover & drag state for ultra-responsive feedback
-  int? _hoverIndex;
-  int _lastHapticIndex = -1;
-
   @override
   void initState() {
     super.initState();
@@ -47,31 +44,12 @@ class _NavigationShellState extends State<NavigationShell> {
       HapticFeedback.selectionClick();
       setState(() {
         _currentIndex = index;
-        _hoverIndex = null;
       });
       _pageController.animateToPage(
         index,
         duration: const Duration(milliseconds: 280),
         curve: AppCurves.springSnappy,
       );
-    }
-  }
-
-  void _handlePointerHover(double localX, double totalWidth, bool isRtl) {
-    if (totalWidth <= 0) return;
-    const numTabs = 5;
-    final tabWidth = totalWidth / numTabs;
-    int rawIndex = (localX / tabWidth).floor().clamp(0, numTabs - 1);
-    int targetIndex = isRtl ? (numTabs - 1 - rawIndex) : rawIndex;
-
-    if (_hoverIndex != targetIndex) {
-      setState(() {
-        _hoverIndex = targetIndex;
-      });
-      if (_lastHapticIndex != targetIndex) {
-        _lastHapticIndex = targetIndex;
-        HapticFeedback.selectionClick();
-      }
     }
   }
 
@@ -88,9 +66,9 @@ class _NavigationShellState extends State<NavigationShell> {
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
     )..layout();
 
-    // Icon size (22) + gap (6) + text width + 28px padding (a little bit bigger than the text content)
-    double neededWidth = 22.0 + 6.0 + painter.width + 28.0;
-    return neededWidth.clamp(56.0, maxTabSlotWidth + 4.0);
+    // Icon (22) + gap (6) + text width + 26px padding (suitable wrap around text & icon)
+    double neededWidth = 22.0 + 6.0 + painter.width + 26.0;
+    return neededWidth.clamp(54.0, maxTabSlotWidth + 4.0);
   }
 
   @override
@@ -151,7 +129,6 @@ class _NavigationShellState extends State<NavigationShell> {
               HapticFeedback.selectionClick();
               setState(() {
                 _currentIndex = index;
-                _hoverIndex = null;
               });
             }
           },
@@ -198,13 +175,12 @@ class _NavigationShellState extends State<NavigationShell> {
                       final double availableWidth = constraints.maxWidth - (barPadding * 2);
                       final double tabWidth = availableWidth / navItems.length;
 
-                      final activeDisplayIndex = _hoverIndex ?? _currentIndex;
-                      final String activeLabelText = loc.translate(navItems[activeDisplayIndex].labelKey);
+                      final String activeLabelText = loc.translate(navItems[_currentIndex].labelKey);
                       final double pillWidth = _calculatePillWidth(activeLabelText, isAr, tabWidth);
 
                       final double slotCenter = barPadding + (isAr
-                          ? (navItems.length - 1 - activeDisplayIndex) * tabWidth
-                          : activeDisplayIndex * tabWidth) + tabWidth / 2;
+                          ? (navItems.length - 1 - _currentIndex) * tabWidth
+                          : _currentIndex * tabWidth) + tabWidth / 2;
 
                       final double targetLeft = slotCenter - pillWidth / 2;
 
@@ -212,9 +188,9 @@ class _NavigationShellState extends State<NavigationShell> {
                         padding: const EdgeInsets.symmetric(horizontal: barPadding),
                         child: Stack(
                           children: [
-                            // 1. Sliding Orange Active Pill Shape (Proportionally larger than text)
+                            // 1. Sliding Active Orange Shape (Smooth Page Movement & Text-Suitable Size)
                             AnimatedPositioned(
-                              duration: const Duration(milliseconds: 200),
+                              duration: const Duration(milliseconds: 260),
                               curve: AppCurves.springSnappy,
                               left: targetLeft - barPadding,
                               top: 13,
@@ -227,48 +203,61 @@ class _NavigationShellState extends State<NavigationShell> {
                                   boxShadow: [
                                     BoxShadow(
                                       color: AppColors.primaryOrange.withValues(alpha: 0.45),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
 
-                            // 2. Interactive Real-Time Mouse Hover & Touch Gestures Layer
-                            MouseRegion(
-                              cursor: SystemMouseCursors.click,
-                              onHover: (event) => _handlePointerHover(event.localPosition.dx, constraints.maxWidth, isAr),
-                              onExit: (_) => setState(() => _hoverIndex = null),
-                              child: GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTapDown: (details) {
-                                  const numTabs = 5;
-                                  final width = constraints.maxWidth;
-                                  final w = width / numTabs;
-                                  int rawIndex = (details.localPosition.dx / w).floor().clamp(0, numTabs - 1);
-                                  int targetIndex = isAr ? (numTabs - 1 - rawIndex) : rawIndex;
-                                  _onTabChanged(targetIndex);
-                                },
-                                onPanUpdate: (details) => _handlePointerHover(details.localPosition.dx, constraints.maxWidth, isAr),
-                                onPanEnd: (_) {
-                                  if (_hoverIndex != null) {
-                                    _onTabChanged(_hoverIndex!);
-                                  }
-                                },
-                                child: Row(
-                                  children: [
-                                    for (int i = 0; i < navItems.length; i++)
-                                      _buildNavItemTile(
-                                        navItems[i],
-                                        activeDisplayIndex == i,
-                                        _currentIndex == i,
-                                        loc,
-                                        constraints.maxWidth < 340,
+                            // 2. Tab Icons & Text Buttons Layer
+                            Row(
+                              children: List.generate(navItems.length, (index) {
+                                final item = navItems[index];
+                                final isSelected = _currentIndex == index;
+
+                                return Expanded(
+                                  child: AppleTouchable(
+                                    enableHaptics: false,
+                                    pressedScale: 0.90,
+                                    onTap: () => _onTabChanged(index),
+                                    child: Center(
+                                      child: AnimatedScale(
+                                        scale: isSelected ? 1.06 : 1.0,
+                                        duration: AppDurations.fast,
+                                        curve: AppCurves.springBouncy,
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              isSelected ? item.activeIcon : item.icon,
+                                              color: isSelected ? Colors.white : Colors.white70,
+                                              size: 22,
+                                            ),
+                                            if (isSelected && constraints.maxWidth >= 340) ...[
+                                              const SizedBox(width: 6),
+                                              AnimatedOpacity(
+                                                duration: AppDurations.fast,
+                                                opacity: isSelected ? 1.0 : 0.0,
+                                                child: Text(
+                                                  loc.translate(item.labelKey),
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 13,
+                                                    letterSpacing: -0.2,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
                                       ),
-                                  ],
-                                ),
-                              ),
+                                    ),
+                                  ),
+                                );
+                              }),
                             ),
                           ],
                         ),
@@ -278,44 +267,6 @@ class _NavigationShellState extends State<NavigationShell> {
                 ),
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItemTile(_NavItemData item, bool isHighlighted, bool isSelected, AppLocalizations loc, bool isCompactMobile) {
-    return Expanded(
-      child: Center(
-        child: AnimatedScale(
-          scale: isHighlighted ? 1.08 : 1.0,
-          duration: AppDurations.fast,
-          curve: AppCurves.springBouncy,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                isHighlighted ? item.activeIcon : item.icon,
-                color: isHighlighted ? Colors.white : Colors.white70,
-                size: 22,
-              ),
-              if (isHighlighted && !isCompactMobile) ...[
-                const SizedBox(width: 6),
-                AnimatedOpacity(
-                  duration: AppDurations.fast,
-                  opacity: isHighlighted ? 1.0 : 0.0,
-                  child: Text(
-                    loc.translate(item.labelKey),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                ),
-              ],
-            ],
           ),
         ),
       ),
