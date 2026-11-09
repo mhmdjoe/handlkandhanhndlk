@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 /// Centralized Design System Tokens for the Handelak Brand
 class AppColors {
   // Primary Brand Colors (Handelak Identity Specification)
-  static const Color primaryPurple = Color(0xFF4300C8);  // Primary Purple (#4300C8)
-  static const Color hoverPurple = Color(0xFF31008F);    // Deep Purple (#31008F) - Hover/Pressed/Dark Surface
+  static const Color primaryPurple = Color(0xFF6B4EFF);  // Lighter Modern Apple Purple (#6B4EFF)
+  static const Color hoverPurple = Color(0xFF5532E0);    // Deep Hover Purple (#5532E0)
   static const Color primaryOrange = Color(0xFFFF5008);  // Primary Orange (#FF5008) - Secondary/Accent/Highlights
-  static const Color lightPurple = Color(0xFFEDE5FF);   // Light Purple (#EDE5FF) - Selected states/Badges
+  static const Color lightPurple = Color(0xFFF1EBFF);   // Soft Light Purple (#F1EBFF) - Selected states/Badges
   static const Color lightOrange = Color(0xFFFFF0E8);   // Light Orange (#FFF0E8) - Notification/Highlight cards
   
   // Neutral Palette
