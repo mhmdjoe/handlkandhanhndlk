@@ -56,7 +56,7 @@ class _NavigationShellState extends State<NavigationShell> {
   double _calculatePillWidth(String text, bool isRtl, double maxTabSlotWidth) {
     const TextStyle style = TextStyle(
       fontWeight: FontWeight.bold,
-      fontSize: 14,
+      fontSize: 13,
       letterSpacing: -0.2,
     );
 
@@ -66,9 +66,9 @@ class _NavigationShellState extends State<NavigationShell> {
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
     )..layout();
 
-    // Icon (24) + gap (8) + text width + 38px padding (spacious & bigger wrap around text & icon)
-    double neededWidth = 24.0 + 8.0 + painter.width + 38.0;
-    return neededWidth.clamp(68.0, maxTabSlotWidth + 14.0);
+    // Icon (22) + gap (6) + text width + 28px padding
+    double neededWidth = 22.0 + 6.0 + painter.width + 28.0;
+    return neededWidth.clamp(58.0, maxTabSlotWidth + 14.0);
   }
 
   @override
@@ -186,7 +186,7 @@ class _NavigationShellState extends State<NavigationShell> {
 
                       return Stack(
                         children: [
-                          // 1. Sliding Active Orange Shape (Safe Clamped Bounds, No Edge Clipping)
+                          // 1. Sliding Active Orange Shape Container containing the active Icon & Text (100% Centered)
                           AnimatedPositioned(
                             duration: const Duration(milliseconds: 260),
                             curve: AppCurves.springSnappy,
@@ -207,21 +207,56 @@ class _NavigationShellState extends State<NavigationShell> {
                                   ),
                                 ],
                               ),
+                              child: Center(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      navItems[_currentIndex].activeIcon,
+                                      color: Colors.white,
+                                      size: 22,
+                                    ),
+                                    if (constraints.maxWidth >= 340) ...[
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        activeLabelText,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          letterSpacing: -0.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
 
-                          // 2. Tab Icons & Text Buttons Layer
+                          // 2. Unselected Tab Icons Touch Layer
                           Row(
-                            children: [
-                              for (int i = 0; i < navItems.length; i++)
-                                _buildNavItemTile(
-                                  navItems[i],
-                                  i,
-                                  _currentIndex == i,
-                                  loc,
-                                  constraints.maxWidth < 340,
+                            children: List.generate(navItems.length, (index) {
+                              final item = navItems[index];
+                              final isSelected = _currentIndex == index;
+
+                              return Expanded(
+                                child: AppleTouchable(
+                                  enableHaptics: false,
+                                  pressedScale: 0.90,
+                                  onTap: () => _onTabChanged(index),
+                                  child: Center(
+                                    child: isSelected
+                                        ? const SizedBox.shrink()
+                                        : Icon(
+                                            item.icon,
+                                            color: Colors.white70,
+                                            size: 22,
+                                          ),
+                                  ),
                                 ),
-                            ],
+                              );
+                            }),
                           ),
                         ],
                       );
@@ -229,49 +264,6 @@ class _NavigationShellState extends State<NavigationShell> {
                   ),
                 ),
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItemTile(_NavItemData item, int index, bool isSelected, AppLocalizations loc, bool isCompactMobile) {
-    return Expanded(
-      child: AppleTouchable(
-        enableHaptics: false,
-        pressedScale: 0.90,
-        onTap: () => _onTabChanged(index),
-        child: Center(
-          child: AnimatedScale(
-            scale: isSelected ? 1.06 : 1.0,
-            duration: AppDurations.fast,
-            curve: AppCurves.springBouncy,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isSelected ? item.activeIcon : item.icon,
-                  color: isSelected ? Colors.white : Colors.white70,
-                  size: 22,
-                ),
-                if (isSelected && !isCompactMobile) ...[
-                  const SizedBox(width: 6),
-                  AnimatedOpacity(
-                    duration: AppDurations.fast,
-                    opacity: isSelected ? 1.0 : 0.0,
-                    child: Text(
-                      loc.translate(item.labelKey),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
             ),
           ),
         ),
