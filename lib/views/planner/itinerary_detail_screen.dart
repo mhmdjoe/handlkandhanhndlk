@@ -182,7 +182,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                       ],
                     ),
 
-                    // Confirm & Book Journey Button
+                    // Confirm & Book Journey Button (Sunset Saffron Orange Gradient)
                     AppleTouchable(
                       onTap: () => _showBookingConfirmationModal(
                         context,
@@ -194,23 +194,30 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                         totalDays,
                         isNoHotel,
                       ),
-                      child: ElevatedButton.icon(
-                        onPressed: () => _showBookingConfirmationModal(
-                          context,
-                          provider,
-                          isAr,
-                          grandTotalEgp,
-                          grandTotalUsd,
-                          selectedHotel,
-                          totalDays,
-                          isNoHotel,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: AppGradients.sunsetOrangeGradient,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryOrange.withValues(alpha: 0.35),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        icon: const Icon(Icons.check_circle_outline_rounded),
-                        label: Text(isAr ? 'تأكيد وحجز الرحلة الآن' : 'Book & Reserve Journey Now'),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size.fromHeight(42),
-                          backgroundColor: AppColors.papyrusGold,
-                          foregroundColor: AppColors.primaryPurple,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              isAr ? 'تأكيد وحجز الرحلة الآن' : 'Book & Reserve Journey Now',
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                            ),
+                          ],
                         ),
                       ),
                     ),
