@@ -144,23 +144,23 @@ class _NavigationShellState extends State<NavigationShell> {
               borderRadius: BorderRadius.circular(36),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.12),
-                  blurRadius: 28,
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 32,
                   spreadRadius: 2,
-                  offset: const Offset(0, 8),
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(36),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: AppGradients.glassNavbarGradient,
                     borderRadius: BorderRadius.circular(36),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.65),
+                      color: Colors.white.withValues(alpha: 0.75),
                       width: 1.5,
                     ),
                   ),
@@ -181,7 +181,7 @@ class _NavigationShellState extends State<NavigationShell> {
 
                       return Stack(
                         children: [
-                          // 1. Sliding Active Orange Shape Container (Sunset Gradient)
+                          // 1. Sliding Active Orange Shape Container (Liquid Apple Orange Sheen)
                           AnimatedPositioned(
                             duration: const Duration(milliseconds: 260),
                             curve: AppCurves.springSnappy,
@@ -193,10 +193,14 @@ class _NavigationShellState extends State<NavigationShell> {
                               decoration: BoxDecoration(
                                 gradient: AppGradients.sunsetOrangeGradient,
                                 borderRadius: BorderRadius.circular(26),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.35),
+                                  width: 1.0,
+                                ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primaryOrange.withValues(alpha: 0.52),
-                                    blurRadius: 14,
+                                    color: AppColors.primaryOrange.withValues(alpha: 0.55),
+                                    blurRadius: 16,
                                     spreadRadius: 1,
                                     offset: const Offset(0, 4),
                                   ),

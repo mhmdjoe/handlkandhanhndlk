@@ -61,14 +61,16 @@ class AppGradients {
     end: Alignment.centerRight,
   );
 
-  // Glassmorphic Liquid Frosted Glass Navbar Gradient
+  // Apple Liquid Glass Dock Gradient
   static LinearGradient glassNavbarGradient = LinearGradient(
     colors: [
-      Colors.white.withValues(alpha: 0.75),
-      Colors.white.withValues(alpha: 0.55),
+      Colors.white.withValues(alpha: 0.65),
+      Colors.white.withValues(alpha: 0.35),
+      Colors.white.withValues(alpha: 0.20),
     ],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
+    stops: const [0.0, 0.5, 1.0],
   );
 
   // Orange Highlight Accent Gradient (Mapped to Sunset Orange)
