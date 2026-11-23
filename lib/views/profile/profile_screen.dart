@@ -32,15 +32,15 @@ class ProfileScreen extends StatelessWidget {
             padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 110),
             child: Column(
               children: [
-                // User Card (Royal Purple Gradient)
+                // User Card (Sleek Dark Charcoal)
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    gradient: AppGradients.royalPurpleGradient,
+                    color: AppColors.darkGray,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primaryPurple.withValues(alpha: 0.35),
+                        color: Colors.black.withValues(alpha: 0.18),
                         blurRadius: 18,
                         offset: const Offset(0, 6),
                       ),

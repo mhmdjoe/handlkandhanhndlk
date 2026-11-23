@@ -144,15 +144,10 @@ class _NavigationShellState extends State<NavigationShell> {
               borderRadius: BorderRadius.circular(36),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryPurple.withValues(alpha: 0.22),
-                  blurRadius: 28,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 10),
-                ),
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.12),
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
+                  color: Colors.black.withValues(alpha: 0.10),
+                  blurRadius: 24,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
@@ -162,10 +157,10 @@ class _NavigationShellState extends State<NavigationShell> {
                 filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
                 child: Container(
                   decoration: BoxDecoration(
-                    gradient: AppGradients.glassNavbarGradient,
+                    color: Colors.white.withValues(alpha: 0.92),
                     borderRadius: BorderRadius.circular(36),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.28),
+                      color: AppColors.borderLight,
                       width: 1.2,
                     ),
                   ),
@@ -186,7 +181,7 @@ class _NavigationShellState extends State<NavigationShell> {
 
                       return Stack(
                         children: [
-                          // 1. Sliding Active Orange Shape Container with Sunset Gradient (100% Centered)
+                          // 1. Sliding Active Orange Shape Container (Sunset Gradient)
                           AnimatedPositioned(
                             duration: const Duration(milliseconds: 260),
                             curve: AppCurves.springSnappy,
@@ -200,8 +195,8 @@ class _NavigationShellState extends State<NavigationShell> {
                                 borderRadius: BorderRadius.circular(26),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primaryOrange.withValues(alpha: 0.52),
-                                    blurRadius: 14,
+                                    color: AppColors.primaryOrange.withValues(alpha: 0.45),
+                                    blurRadius: 12,
                                     spreadRadius: 1,
                                     offset: const Offset(0, 4),
                                   ),
@@ -234,7 +229,7 @@ class _NavigationShellState extends State<NavigationShell> {
                             ),
                           ),
 
-                          // 2. Unselected Tab Icons Touch Layer
+                          // 2. Unselected Tab Icons Touch Layer (Clean Dark Gray)
                           Row(
                             children: List.generate(navItems.length, (index) {
                               final item = navItems[index];
@@ -250,7 +245,7 @@ class _NavigationShellState extends State<NavigationShell> {
                                         ? const SizedBox.shrink()
                                         : Icon(
                                             item.icon,
-                                            color: Colors.white70,
+                                            color: AppColors.darkGray,
                                             size: 22,
                                           ),
                                   ),
