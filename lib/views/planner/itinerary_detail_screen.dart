@@ -142,17 +142,17 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                           children: [
                             Text(
                               loc.translate('estimatedCost'),
-                              style: const TextStyle(color: AppColors.lightPurple, fontSize: 12, fontWeight: FontWeight.w500),
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12, fontWeight: FontWeight.w500),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               provider.formatPrice(grandTotalEgp, grandTotalUsd),
-                              style: const TextStyle(color: AppColors.papyrusGold, fontSize: 22, fontWeight: FontWeight.bold),
+                              style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
 
-                        // Date Picker Trigger Button
+                        // Date Picker Trigger Button (All White Date Badge)
                         AppleTouchable(
                           pressedScale: 0.92,
                           onTap: () async {
@@ -168,13 +168,13 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                           },
                           child: OutlinedButton.icon(
                             onPressed: null,
-                            icon: const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.papyrusGold),
+                            icon: const Icon(Icons.calendar_today_rounded, size: 16, color: Colors.white),
                             label: Text(
                               '${_selectedStartDate.day}/${_selectedStartDate.month}/${_selectedStartDate.year}',
                               style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                             ),
                             style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: AppColors.papyrusGold),
+                              side: const BorderSide(color: Colors.white, width: 1.2),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                             ),
                           ),
@@ -364,7 +364,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                   children: [
                     Text(
                       isAr ? 'خيار الإقامة والفندق' : 'Hotel Accommodation',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primaryPurple, letterSpacing: -0.2),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primaryOrange, letterSpacing: -0.2),
                     ),
                     AppleTouchable(
                       pressedScale: 0.90,
@@ -372,17 +372,17 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppColors.lightPurple,
+                          color: AppColors.lightOrange,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.borderLight),
+                          border: Border.all(color: AppColors.primaryOrange.withValues(alpha: 0.4)),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.hotel_rounded, size: 16, color: AppColors.primaryPurple),
+                            const Icon(Icons.hotel_rounded, size: 16, color: AppColors.primaryOrange),
                             const SizedBox(width: 4),
                             Text(
                               isAr ? 'تغيير الفندق' : 'Change Hotel',
-                              style: const TextStyle(color: AppColors.primaryPurple, fontWeight: FontWeight.bold, fontSize: 12),
+                              style: const TextStyle(color: AppColors.primaryOrange, fontWeight: FontWeight.bold, fontSize: 12),
                             ),
                           ],
                         ),
@@ -410,13 +410,14 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                           children: [
                             Text(
                               isAr ? selectedHotel.nameAr : selectedHotel.nameEn,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: -0.2),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.primaryOrange, letterSpacing: -0.2),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
+                            const SizedBox(height: 2),
                             Text(
                               '${selectedHotel.starRating}★ • ${isAr ? selectedHotel.cityAr : selectedHotel.cityEn}',
-                              style: const TextStyle(color: AppColors.mediumGray, fontSize: 12),
+                              style: const TextStyle(color: AppColors.primaryOrange, fontSize: 12, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -459,7 +460,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                   children: [
                     Text(
                       '${isAr ? 'اليوم' : 'Day'} $dayNum',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryPurple, letterSpacing: -0.3),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryOrange, letterSpacing: -0.3),
                     ),
                     const Divider(height: 20),
 
