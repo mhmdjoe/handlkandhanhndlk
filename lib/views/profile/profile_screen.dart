@@ -32,15 +32,15 @@ class ProfileScreen extends StatelessWidget {
             padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 110),
             child: Column(
               children: [
-                // User Card (Sleek Dark Charcoal)
+                // User Card (Royal Purple Gradient)
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppColors.darkGray,
+                    gradient: AppGradients.royalPurpleGradient,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.18),
+                        color: AppColors.primaryPurple.withValues(alpha: 0.35),
                         blurRadius: 18,
                         offset: const Offset(0, 6),
                       ),
@@ -50,8 +50,8 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       const CircleAvatar(
                         radius: 32,
-                        backgroundColor: AppColors.papyrusGold,
-                        child: Icon(Icons.person, color: AppColors.primaryPurple, size: 36),
+                        backgroundColor: AppColors.primaryOrange,
+                        child: Icon(Icons.person, color: Colors.white, size: 36),
                       ),
                       const SizedBox(width: 16),
                       Expanded(

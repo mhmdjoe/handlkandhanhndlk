@@ -1,36 +1,36 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-/// Centralized Design System Tokens for the Handelak Brand
+/// Centralized Design System Tokens for the Handelak Brand (Strict Purple & Orange Identity)
 class AppColors {
   // Primary Brand Colors (Handelak Identity Specification)
-  static const Color primaryPurple = Color(0xFF6B4EFF);  // Lighter Modern Apple Purple (#6B4EFF)
+  static const Color primaryPurple = Color(0xFF6B4EFF);  // Electric Apple Purple (#6B4EFF)
   static const Color hoverPurple = Color(0xFF5532E0);    // Deep Hover Purple (#5532E0)
-  static const Color primaryOrange = Color(0xFFFF5008);  // Primary Orange (#FF5008) - Secondary/Accent/Highlights
-  static const Color lightPurple = Color(0xFFF1EBFF);   // Soft Light Purple (#F1EBFF) - Selected states/Badges
-  static const Color lightOrange = Color(0xFFFFF0E8);   // Light Orange (#FFF0E8) - Notification/Highlight cards
+  static const Color primaryOrange = Color(0xFFFF5008);  // Vibrant Saffron Orange (#FF5008)
+  static const Color lightPurple = Color(0xFFF1EBFF);   // Soft Light Purple (#F1EBFF)
+  static const Color lightOrange = Color(0xFFFFF0E8);   // Light Orange (#FFF0E8)
   
   // Neutral Palette
   static const Color backgroundLight = Colors.white;     // Content Background (#FFFFFF)
-  static const Color surfaceMuted = Color(0xFFF2F2F2);   // Light Gray (#F2F2F2)
+  static const Color surfaceMuted = Color(0xFFF5F3FA);   // Subtle Neutral Surface
   static const Color cardSurface = Colors.white;
-  static const Color darkGray = Color(0xFF333333);      // Dark Gray (#333333) - Primary Readable Text
-  static const Color mediumGray = Color(0xFF757575);    // Medium Gray (#757575) - Secondary Text & Captions
+  static const Color darkGray = Color(0xFF333333);      // Dark Gray (#333333) - Readable Text
+  static const Color mediumGray = Color(0xFF757575);    // Medium Gray (#757575) - Captions
   static const Color borderLight = Color(0xFFE2DCF2);   // Soft Neutral Border
   
-  // Legacy Aliases for Backwards Compatibility Across Project
+  // Mapped Strictly to Purple & Orange Identity
   static const Color nileTeal = primaryPurple;
   static const Color terracotta = primaryOrange;
-  static const Color papyrusGold = Color(0xFFD4AF37);   // Pharaonic Gold Accent
+  static const Color papyrusGold = primaryOrange;       // Mapped to Orange Highlight
   static const Color desertSand = lightPurple;
   static const Color charcoal = darkGray;
   static const Color textMuted = mediumGray;
-  static const Color seaTurquoise = Color(0xFF00A896);  // Red Sea Turquoise
+  static const Color seaTurquoise = primaryPurple;
   
-  // Semantic Status Colors
-  static const Color verifiedGreen = Color(0xFF2E7D32); // Success / Verified Badge
-  static const Color starYellow = Color(0xFFFFB300);    // Ratings
-  static const Color alertAmber = Color(0xFFF57C00);    // Schedule Warnings
+  // Semantic Status Colors (Purple & Orange Mapped)
+  static const Color verifiedGreen = primaryPurple;      // Verified Badge (Purple)
+  static const Color starYellow = primaryOrange;         // Star Ratings (Orange)
+  static const Color alertAmber = primaryOrange;         // Schedule Warnings (Orange)
   
   // Dark Mode Palette
   static const Color darkBackground = Color(0xFF1B0054);
@@ -61,22 +61,22 @@ class AppGradients {
     end: Alignment.centerRight,
   );
 
-  // Glassmorphic Navbar Gradient
+  // Glassmorphic Navbar & Glass Bar Gradient
   static const LinearGradient glassNavbarGradient = LinearGradient(
     colors: [
-      Color(0xDC6B4EFF), // Translucent Electric Purple
-      Color(0xEC4A14B8), // Translucent Royal Indigo
+      Color(0xDC6B4EFF), // Translucent Electric Purple (86%)
+      Color(0xEC4A14B8), // Translucent Royal Indigo (92%)
     ],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
-  // Pharaonic Gold Accent Gradient
+  // Orange Highlight Accent Gradient (Mapped to Sunset Orange)
   static const LinearGradient goldAccentGradient = LinearGradient(
     colors: [
-      Color(0xFFFFD54F), // Bright Gold
-      Color(0xFFFFB300), // Amber Gold
-      Color(0xFFD4AF37), // Metallic Pharaonic Gold
+      Color(0xFFFF6E40),
+      Color(0xFFFF5008),
+      Color(0xFFE64A19),
     ],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -104,7 +104,7 @@ class AppTheme {
         seedColor: AppColors.primaryPurple,
         primary: AppColors.primaryPurple,
         secondary: AppColors.primaryOrange,
-        tertiary: AppColors.papyrusGold,
+        tertiary: AppColors.primaryOrange,
         surface: AppColors.cardSurface,
         error: Colors.redAccent,
         onPrimary: Colors.white,
@@ -120,7 +120,7 @@ class AppTheme {
         },
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.backgroundLight,
+        backgroundColor: Colors.white,
         foregroundColor: AppColors.darkGray,
         elevation: 0,
         scrolledUnderElevation: 0,

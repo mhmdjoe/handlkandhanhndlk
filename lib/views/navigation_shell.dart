@@ -157,10 +157,10 @@ class _NavigationShellState extends State<NavigationShell> {
                 filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.92),
+                    gradient: AppGradients.glassNavbarGradient,
                     borderRadius: BorderRadius.circular(36),
                     border: Border.all(
-                      color: AppColors.borderLight,
+                      color: Colors.white.withValues(alpha: 0.28),
                       width: 1.2,
                     ),
                   ),
@@ -195,8 +195,8 @@ class _NavigationShellState extends State<NavigationShell> {
                                 borderRadius: BorderRadius.circular(26),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primaryOrange.withValues(alpha: 0.45),
-                                    blurRadius: 12,
+                                    color: AppColors.primaryOrange.withValues(alpha: 0.52),
+                                    blurRadius: 14,
                                     spreadRadius: 1,
                                     offset: const Offset(0, 4),
                                   ),
@@ -229,7 +229,7 @@ class _NavigationShellState extends State<NavigationShell> {
                             ),
                           ),
 
-                          // 2. Unselected Tab Icons Touch Layer (Clean Dark Gray)
+                          // 2. Unselected Tab Icons Touch Layer (Crisp White70 Glass Icons)
                           Row(
                             children: List.generate(navItems.length, (index) {
                               final item = navItems[index];
@@ -245,7 +245,7 @@ class _NavigationShellState extends State<NavigationShell> {
                                         ? const SizedBox.shrink()
                                         : Icon(
                                             item.icon,
-                                            color: AppColors.darkGray,
+                                            color: Colors.white70,
                                             size: 22,
                                           ),
                                   ),

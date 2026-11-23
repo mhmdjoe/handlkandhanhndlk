@@ -134,11 +134,11 @@ class HomeScreen extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                gradient: AppGradients.goldAccentGradient,
+                                gradient: AppGradients.royalPurpleGradient,
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.papyrusGold.withValues(alpha: 0.35),
+                                    color: AppColors.primaryPurple.withValues(alpha: 0.35),
                                     blurRadius: 16,
                                     offset: const Offset(0, 6),
                                   ),
@@ -153,25 +153,25 @@ class HomeScreen extends StatelessWidget {
                                       Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.30),
+                                          color: Colors.white.withValues(alpha: 0.20),
                                           shape: BoxShape.circle,
                                         ),
-                                        child: const Icon(Icons.explore_rounded, color: AppColors.darkGray, size: 24),
+                                        child: const Icon(Icons.explore_rounded, color: Colors.white, size: 24),
                                       ),
-                                      const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.darkGray, size: 14),
+                                      const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
                                     ],
                                   ),
                                   const SizedBox(height: 14),
                                   Text(
                                     loc.translate('hndlkTitle'),
-                                    style: const TextStyle(color: AppColors.darkGray, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: -0.2),
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: -0.2),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     isAr ? 'هنوريك كل مكان في مصر' : 'Discover All Places',
-                                    style: const TextStyle(color: AppColors.darkGray, fontSize: 12, fontWeight: FontWeight.w600),
+                                    style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12, fontWeight: FontWeight.w500),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
