@@ -36,12 +36,16 @@ class AiAssistantResponse {
   final String textResponseAr;
   final Trip? generatedTrip;
   final bool isClarificationNeeded;
+  final String travelStyleTagEn;
+  final String travelStyleTagAr;
 
   AiAssistantResponse({
     required this.textResponseEn,
     required this.textResponseAr,
     this.generatedTrip,
     this.isClarificationNeeded = false,
+    this.travelStyleTagEn = 'Cultural Exploration',
+    this.travelStyleTagAr = 'استكشاف ثقافي',
   });
 }
 
@@ -92,7 +96,28 @@ class AiAssistantService {
       targetTravelers = 4;
     }
 
-    // 3. Multi-Destination & Smart Entity Recognition
+    // 3. Travel Style Recognition & Intent Tagging
+    String travelStyleEn = 'Classic Cultural Journey';
+    String travelStyleAr = 'رحلة ثقافية كلاسيكية';
+
+    if (p.contains('diving') || p.contains('snorkeling') || p.contains('غوص') || p.contains('سنوركلنج') || p.contains('coral')) {
+      travelStyleEn = 'Red Sea Diving & Marine Life';
+      travelStyleAr = 'غوص وشعاب مرجانية بالبحر الأحمر';
+    } else if (p.contains('safari') || p.contains('desert') || p.contains('سفاري') || p.contains('صحراء') || p.contains('camping')) {
+      travelStyleEn = 'Desert Safari & Camping';
+      travelStyleAr = 'سفاري وتخييم صحراوي';
+    } else if (p.contains('pyramid') || p.contains('pharaoh') || p.contains('أهرامات') || p.contains('فراعنة') || p.contains('temple')) {
+      travelStyleEn = 'Pharaonic Ancient Wonders';
+      travelStyleAr = 'عجائب الفراعنة والآثار القديمة';
+    } else if (p.contains('relax') || p.contains('beach') || p.contains('استجمام') || p.contains('شاطئ') || p.contains('resort')) {
+      travelStyleEn = 'Coastal Beach & Relaxation';
+      travelStyleAr = 'استجمام ساحلي وشواطئ';
+    } else if (p.contains('budget') || p.contains('cheap') || p.contains('اقتصادي') || p.contains('رخيص')) {
+      travelStyleEn = 'Smart Budget Traveler';
+      travelStyleAr = 'سفر اقتصادي ذكي';
+    }
+
+    // 4. Multi-Destination & Entity Recognition
     List<String> detectedDestinationIds = [];
 
     if (p.contains('cairo') || p.contains('قاهرة') || p.contains('pyramid') || p.contains('أهرامات') || p.contains('giza') || p.contains('جيزة') || p.contains('gem') || p.contains('mummies')) {
@@ -129,7 +154,7 @@ class AiAssistantService {
 
     final String primaryDestinationId = detectedDestinationIds.first;
 
-    // 4. Hotel Budget Tier Extraction
+    // 5. Hotel Budget Tier Extraction
     String hotelBudgetTier = 'Moderate';
     if (p.contains('cheap') || p.contains('budget') || p.contains('رخيص') || p.contains('اقتصادي') || p.contains('اقتصادية')) {
       hotelBudgetTier = 'Budget';
@@ -141,7 +166,7 @@ class AiAssistantService {
       hotelBudgetTier = 'No Hotel Needed';
     }
 
-    // 5. Select Attractions Matching Destinations & Categories
+    // 6. Select Attractions Matching Destinations & Categories
     final List<Attraction> candidateAttractions = TourismDatabase.attractions
         .where((a) => detectedDestinationIds.contains(a.destinationId))
         .toList();
@@ -152,7 +177,7 @@ class AiAssistantService {
       targetAttractionIds = TourismDatabase.attractions.map((a) => a.id).toList();
     }
 
-    // 6. Conditional Trip Object Generation
+    // 7. Conditional Trip Object Generation
     final bool shouldCreateTrip = p.contains('trip') || p.contains('plan') || p.contains('create') ||
         p.contains('itinerary') || p.contains('generate') || p.contains('رحلة') || p.contains('جدول') ||
         p.contains('خطط') || p.contains('اصنع') || p.contains('صمم') || p.contains('احجز') ||
@@ -174,7 +199,7 @@ class AiAssistantService {
           )
         : null;
 
-    // 7. Multi-Tier AI Execution: 1. Local Agent -> 2. Gemini 1.5 Flash -> 3. Smart Local Guidance
+    // 8. Multi-Tier AI Execution: 1. Local Agent -> 2. Gemini REST API -> 3. Smart Local Guidance
     String textEn = '';
     String textAr = '';
 
@@ -215,40 +240,44 @@ class AiAssistantService {
           .join(' و ');
 
       final scheduledCount = trip?.items.length ?? candidateAttractions.take(targetDays * 2).length;
-      final totalEgp = trip != null ? trip.totalCostEgp : (targetDays * 600.0 * targetTravelers);
-      final totalUsd = trip != null ? trip.totalCostUsd : (targetDays * 14.0 * targetTravelers);
+      final totalEgp = trip != null ? trip.totalCostEgp : (targetDays * 650.0 * targetTravelers);
+      final totalUsd = trip != null ? trip.totalCostUsd : (targetDays * 14.5 * targetTravelers);
 
-      textEn = '🤖 **Handelak Smart AI Journey Analysis Complete!**\n\n'
+      textEn = '🤖 **Handelak Smart AI Concierge Analysis Complete!**\n\n'
+          '• **Travel Style:** $travelStyleEn\n'
           '• **Destination(s):** $destinationsFormattedEn\n'
           '• **Duration:** $targetDays Days\n'
           '• **Travelers:** $targetTravelers Person(s)\n'
           '• **Accommodation Tier:** $hotelBudgetTier\n'
-          '• **Scheduled Experiences:** $scheduledCount Verified Attractions\n'
+          '• **Scheduled Visits:** $scheduledCount Official Attractions\n'
           '• **Estimated Entrance Cost:** ${totalEgp.toStringAsFixed(0)} EGP (~${totalUsd.toStringAsFixed(0)} USD)\n\n'
-          '📍 **Smart Itinerary Highlights:**\n'
-          '• *Morning:* Early entrance to beat heat & crowds.\n'
-          '• *Afternoon:* Cultural visits & local food spots.\n'
-          '• *Evening:* Sunset Nile felucca ride & bazaar walking tour.\n\n'
-          '💡 **Insider Local Tip:** All ticket prices and operating hours have been officially cross-verified against mota.gov.eg!';
+          '📍 **Optimized Route Sequence:**\n'
+          '• *Morning:* Priority access to top historical & natural landmarks.\n'
+          '• *Afternoon:* Air-conditioned museums & authentic Egyptian dining.\n'
+          '• *Evening:* Felucca Nile sunset cruises, sound & light shows, and souk walking tours.\n\n'
+          '💡 **Verified Local Tip:** All operating hours and ticket prices are officially cross-checked with mota.gov.eg!';
 
-      textAr = '🤖 **اكتمل تحليل هنهندلك الذكي لرحلتك!**\n\n'
+      textAr = '🤖 **اكتمل تحليل مساعد هنهندلك الذكي لرحلتك!**\n\n'
+          '• **نمط السفر:** $travelStyleAr\n'
           '• **الوجهة / المحافظات:** $destinationsFormattedAr\n'
           '• **المدة:** $targetDays أيام\n'
           '• **عدد المسافرين:** $targetTravelers شخص\n'
           '• **فئة الإقامة:** $hotelBudgetTier\n'
-          '• **الأنشطة المجدولة:** $scheduledCount موقعاً ومزاراً موثقاً\n'
+          '• **الأنشطة المجدولة:** $scheduledCount موقعاً أثرياً وسياحياً\n'
           '• **التكلفة التقديرية للتذاكر:** ${totalEgp.toStringAsFixed(0)} جنيه مصري (~${totalUsd.toStringAsFixed(0)} دولار)\n\n'
-          '📍 **أبرز محطات الرحلة:**\n'
-          '• *الصباح:* زيارة المواقع الأثرية مبكراً لتجنب الشمس.\n'
-          '• *الظهيرة:* المتاحف المكيفة وتذوق الأكلات الشعبية.\n'
-          '• *المساء:* جولة نيلية بالفلوكة وقت الغروب والتسوق بأسواق خان الخليلي.\n\n'
-          '💡 **نصيحة المساعد الذكي:** تم توثيق جميع أسعار التذاكر ومواعيد الفتح الرسمية من وزارة السياحة والآثار المصرية!';
+          '📍 **تسلسل مسار الرحلة الذكي:**\n'
+          '• *الصباح:* دخول مبكر لأبرز المعالم التاريخية والطبيعية لتجنب الزحام.\n'
+          '• *الظهيرة:* زيارة المتاحف وتذوق أشهر الأكلات الشعبية.\n'
+          '• *المساء:* جولات الغروب بالنيل وشعائر الصوت والضوء والتسوق.\n\n'
+          '💡 **توصية المساعد الذكي:** تم توثيق جميع مواعيد الفتح وأسعار التذاكر رسمياً مع وزارة السياحة والآثار المصرية!';
     }
 
     return AiAssistantResponse(
       textResponseEn: textEn,
       textResponseAr: textAr,
       generatedTrip: trip,
+      travelStyleTagEn: travelStyleEn,
+      travelStyleTagAr: travelStyleAr,
     );
   }
 
@@ -261,7 +290,7 @@ class AiAssistantService {
     required String key,
   }) async {
     final url = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$key');
-    
+
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -270,7 +299,7 @@ class AiAssistantService {
           {
             'parts': [
               {
-                'text': 'You are Handelak AI (هندلك وهنهندلك), the premier expert Egyptian travel guide. '
+                'text': 'You are Handelak AI (هندلك وهنهندلك), the premier expert Egyptian travel concierge. '
                     'Answer concisely in the user\'s language regarding a $days-day trip to $destinationName for $travelers travelers: "$prompt". '
                     'Include specific prices in EGP/USD and official Egyptian Ministry of Tourism tips.'
               }

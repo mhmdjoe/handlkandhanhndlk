@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../models/models.dart';
 import '../../providers/app_provider.dart';
 import '../../services/ai_assistant_service.dart';
 import '../../l10n/app_localizations.dart';
@@ -13,11 +14,15 @@ class ChatMessage {
   final String text;
   final bool isUser;
   final DateTime timestamp;
+  final Trip? generatedTrip;
+  final String? styleTag;
 
   ChatMessage({
     required this.text,
     required this.isUser,
     required this.timestamp,
+    this.generatedTrip,
+    this.styleTag,
   });
 }
 
@@ -80,6 +85,8 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
           text: isAr ? response.textResponseAr : response.textResponseEn,
           isUser: false,
           timestamp: DateTime.now(),
+          generatedTrip: response.generatedTrip,
+          styleTag: isAr ? response.travelStyleTagAr : response.travelStyleTagEn,
         ),
       );
     });
@@ -91,7 +98,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
           content: Text(isAr ? 'تم إنشاء الرحلة وحفظها في "رحلاتي"!' : 'Trip created and saved to My Trips!'),
           action: SnackBarAction(
             label: isAr ? 'عرض' : 'View',
-            textColor: AppColors.papyrusGold,
+            textColor: AppColors.primaryOrange,
             onPressed: () {
               Navigator.push(
                 context,
@@ -154,10 +161,10 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 14),
                       padding: const EdgeInsets.all(14),
-                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.85),
                       decoration: BoxDecoration(
                         color: msg.isUser ? AppColors.primaryPurple : Colors.white,
-                        borderRadius: BorderRadius.circular(18).copyWith(
+                        borderRadius: BorderRadius.circular(20).copyWith(
                           bottomRight: msg.isUser ? Radius.zero : null,
                           bottomLeft: !msg.isUser ? Radius.zero : null,
                         ),
@@ -165,7 +172,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 6,
+                            blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
                         ],
@@ -179,30 +186,93 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                               Icon(
                                 msg.isUser ? Icons.person_pin_rounded : Icons.auto_awesome_rounded,
                                 size: 14,
-                                color: msg.isUser ? AppColors.papyrusGold : AppColors.primaryOrange,
+                                color: msg.isUser ? AppColors.primaryOrange : AppColors.primaryOrange,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 msg.isUser
                                     ? (userName.isNotEmpty ? userName : (isAr ? 'أنت' : 'You'))
                                     : 'Handelak AI',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: msg.isUser ? AppColors.papyrusGold : AppColors.primaryOrange,
+                                  color: AppColors.primaryOrange,
                                 ),
                               ),
+                              if (msg.styleTag != null) ...[
+                                const Spacer(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.lightOrange,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    msg.styleTag!,
+                                    style: const TextStyle(color: AppColors.primaryOrange, fontSize: 10, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
                           Text(
                             msg.text,
                             style: TextStyle(
                               color: msg.isUser ? Colors.white : AppColors.darkGray,
                               fontSize: 14,
-                              height: 1.4,
+                              height: 1.45,
                             ),
                           ),
+
+                          // Interactive Generated Trip Action Card
+                          if (msg.generatedTrip != null) ...[
+                            const SizedBox(height: 12),
+                            AppleTouchable(
+                              pressedScale: 0.96,
+                              borderRadius: BorderRadius.circular(14),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  AppCupertinoPageRoute(
+                                    page: ItineraryDetailScreen(trip: msg.generatedTrip!),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.lightOrange,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: AppColors.primaryOrange.withValues(alpha: 0.4)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.explore_rounded, color: AppColors.primaryOrange, size: 28),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            msg.generatedTrip!.title,
+                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.darkGray),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            '${msg.generatedTrip!.daysCount} ${isAr ? "أيام" : "Days"} • ${msg.generatedTrip!.items.length} ${isAr ? "أماكن" : "Places"}',
+                                            style: const TextStyle(fontSize: 11, color: AppColors.primaryOrange, fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.primaryOrange, size: 14),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
