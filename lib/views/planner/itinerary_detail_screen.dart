@@ -596,8 +596,6 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                 padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
-                    const Icon(Icons.drag_indicator_rounded, color: AppColors.mediumGray, size: 20),
-                    const SizedBox(width: 8),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(14),
                       child: SafeNetworkImage(
