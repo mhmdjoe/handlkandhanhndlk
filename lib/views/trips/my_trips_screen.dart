@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_provider.dart';
 import '../../data/tourism_database.dart';
@@ -261,261 +260,215 @@ class _SlidableTripCard extends StatefulWidget {
 }
 
 class _SlidableTripCardState extends State<_SlidableTripCard> {
-  double _slideOffset = 0.0;
-  static const double _maxRevealWidth = 84.0;
-
-  void _onHorizontalDragUpdate(DragUpdateDetails details) {
-    setState(() {
-      _slideOffset = (_slideOffset + details.delta.dx).clamp(-_maxRevealWidth, 0.0);
-    });
-  }
-
-  void _onHorizontalDragEnd(DragEndDetails details) {
-    if (_slideOffset < -35.0) {
-      setState(() => _slideOffset = -_maxRevealWidth);
-      HapticFeedback.lightImpact();
-    } else {
-      setState(() => _slideOffset = 0.0);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onHorizontalDragUpdate: _onHorizontalDragUpdate,
-      onHorizontalDragEnd: _onHorizontalDragEnd,
-      child: Stack(
-        children: [
-          // Revealed Delete Icon Button (Stays visible behind on the right)
-          Positioned.fill(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Container(
-                width: _maxRevealWidth,
-                alignment: Alignment.center,
-                child: AppleTouchable(
-                  pressedScale: 0.85,
-                  onTap: () async {
-                    final confirmed = await widget.onDeleteRequested();
-                    if (confirmed == true) {
-                      widget.provider.removeTrip(widget.trip.id);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            duration: const Duration(seconds: 5),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: AppColors.darkGray,
-                            content: Text(
-                              widget.isAr ? 'تم حذف الرحلة بنجاح' : 'Trip deleted successfully',
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-                            ),
-                            action: SnackBarAction(
-                              label: widget.isAr ? 'تراجع' : 'Undo',
-                              textColor: AppColors.primaryOrange,
-                              onPressed: () => widget.provider.addTrip(widget.trip),
-                            ),
-                          ),
-                        );
-                      }
-                    } else {
-                      setState(() => _slideOffset = 0.0);
-                    }
-                  },
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: Colors.redAccent.shade700,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.redAccent.withValues(alpha: 0.35),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.delete_forever_rounded,
-                      color: Colors.white,
-                      size: 26,
-                    ),
-                  ),
+    return Dismissible(
+      key: ValueKey('trip_dismiss_${widget.trip.id}'),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (direction) async {
+        final confirmed = await widget.onDeleteRequested();
+        if (confirmed == true) {
+          widget.provider.removeTrip(widget.trip.id);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).removeCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                duration: const Duration(seconds: 5),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: AppColors.darkGray,
+                content: Text(
+                  widget.isAr ? 'تم حذف الرحلة بنجاح' : 'Trip deleted successfully',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+                action: SnackBarAction(
+                  label: widget.isAr ? 'تراجع' : 'Undo',
+                  textColor: AppColors.primaryOrange,
+                  onPressed: () => widget.provider.addTrip(widget.trip),
                 ),
               ),
+            );
+          }
+          return true;
+        }
+        return false;
+      },
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 24),
+        decoration: BoxDecoration(
+          color: Colors.redAccent.shade700,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              widget.isAr ? 'حذف الرحلة' : 'Delete Trip',
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
             ),
+            const SizedBox(width: 8),
+            const Icon(Icons.delete_forever_rounded, color: Colors.white, size: 28),
+          ],
+        ),
+      ),
+      child: AppleTouchable(
+        pressedScale: 0.97,
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          Navigator.push(
+            context,
+            AppCupertinoPageRoute(
+              page: ItineraryDetailScreen(trip: widget.trip),
+            ),
+          );
+        },
+        child: Card(
+          margin: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: AppColors.borderLight),
           ),
-
-          // Sliding Trip Card
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 140),
-            curve: AppCurves.springSnappy,
-            transform: Matrix4.translationValues(_slideOffset, 0, 0),
-            child: AppleTouchable(
-              pressedScale: 0.97,
-              borderRadius: BorderRadius.circular(20),
-              onTap: () {
-                if (_slideOffset < 0) {
-                  setState(() => _slideOffset = 0.0);
-                } else {
-                  Navigator.push(
-                    context,
-                    AppCupertinoPageRoute(
-                      page: ItineraryDetailScreen(trip: widget.trip),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  SafeNetworkImage(
+                    imageUrl: widget.trip.coverImageUrl,
+                    height: 140,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  Container(
+                    height: 140,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                      gradient: LinearGradient(
+                        colors: [Colors.black.withValues(alpha: 0.70), Colors.transparent],
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                      ),
                     ),
-                  );
-                }
-              },
-              child: Card(
-                margin: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: const BorderSide(color: AppColors.borderLight),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Stack(
+                  ),
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: widget.trip.status == 'Active Journey'
+                            ? AppColors.primaryOrange
+                            : AppColors.primaryPurple,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        widget.trip.status,
+                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 12,
+                    left: 12,
+                    right: 12,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SafeNetworkImage(
-                          imageUrl: widget.trip.coverImageUrl,
-                          height: 140,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                        Text(
+                          widget.trip.title,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17, letterSpacing: -0.2),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        Container(
-                          height: 140,
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                            gradient: LinearGradient(
-                              colors: [Colors.black.withValues(alpha: 0.70), Colors.transparent],
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 12,
-                          right: 12,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: widget.trip.status == 'Active Journey'
-                                  ? AppColors.primaryOrange
-                                  : AppColors.primaryPurple,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              widget.trip.status,
-                              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 12,
-                          left: 12,
-                          right: 12,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.trip.title,
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17, letterSpacing: -0.2),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                '${widget.isAr ? widget.dest.nameAr : widget.dest.nameEn} • ${widget.trip.daysCount} ${widget.loc.translate('days')}',
-                                style: const TextStyle(color: AppColors.papyrusGold, fontSize: 12, fontWeight: FontWeight.w600),
-                              ),
-                            ],
-                          ),
+                        Text(
+                          '${widget.isAr ? widget.dest.nameAr : widget.dest.nameEn} • ${widget.trip.daysCount} ${widget.loc.translate('days')}',
+                          style: const TextStyle(color: AppColors.papyrusGold, fontSize: 12, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.event_outlined, size: 16, color: AppColors.mediumGray),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${widget.trip.startDate.day}/${widget.trip.startDate.month}/${widget.trip.startDate.year}',
-                                style: const TextStyle(fontSize: 12, color: AppColors.darkGray, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.event_outlined, size: 16, color: AppColors.mediumGray),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${widget.trip.startDate.day}/${widget.trip.startDate.month}/${widget.trip.startDate.year}',
+                          style: const TextStyle(fontSize: 12, color: AppColors.darkGray, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        AppleTouchable(
+                          pressedScale: 0.85,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              AppCupertinoPageRoute(
+                                page: const InteractiveMapScreen(),
                               ),
-                            ],
+                            );
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.all(6),
+                            child: Icon(Icons.map_outlined, color: AppColors.primaryPurple, size: 22),
                           ),
-                          Row(
-                            children: [
-                              AppleTouchable(
-                                pressedScale: 0.85,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    AppCupertinoPageRoute(
-                                      page: const InteractiveMapScreen(),
+                        ),
+                        const SizedBox(width: 4),
+                        AppleTouchable(
+                          pressedScale: 0.85,
+                          onTap: () async {
+                            final confirmed = await widget.onDeleteRequested();
+                            if (confirmed == true) {
+                              widget.provider.removeTrip(widget.trip.id);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    duration: const Duration(seconds: 5),
+                                    behavior: SnackBarBehavior.floating,
+                                    backgroundColor: AppColors.darkGray,
+                                    content: Text(
+                                      widget.isAr ? 'تم حذف الرحلة بنجاح' : 'Trip deleted successfully',
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                                     ),
-                                  );
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(6),
-                                  child: Icon(Icons.map_outlined, color: AppColors.primaryPurple, size: 22),
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              AppleTouchable(
-                                pressedScale: 0.85,
-                                onTap: () async {
-                                  final confirmed = await widget.onDeleteRequested();
-                                  if (confirmed == true) {
-                                    widget.provider.removeTrip(widget.trip.id);
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          duration: const Duration(seconds: 5),
-                                          behavior: SnackBarBehavior.floating,
-                                          backgroundColor: AppColors.darkGray,
-                                          content: Text(
-                                            widget.isAr ? 'تم حذف الرحلة بنجاح' : 'Trip deleted successfully',
-                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-                                          ),
-                                          action: SnackBarAction(
-                                            label: widget.isAr ? 'تراجع' : 'Undo',
-                                            textColor: AppColors.primaryOrange,
-                                            onPressed: () => widget.provider.addTrip(widget.trip),
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  }
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(6),
-                                  child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                widget.provider.formatPrice(widget.trip.totalCostEgp, widget.trip.totalCostUsd),
-                                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryOrange, fontSize: 15),
-                              ),
-                            ],
+                                    action: SnackBarAction(
+                                      label: widget.isAr ? 'تراجع' : 'Undo',
+                                      textColor: AppColors.primaryOrange,
+                                      onPressed: () => widget.provider.addTrip(widget.trip),
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.all(6),
+                            child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          widget.provider.formatPrice(widget.trip.totalCostEgp, widget.trip.totalCostUsd),
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryOrange, fontSize: 15),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -628,10 +628,19 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                     ),
                     AppleTouchable(
                       pressedScale: 0.85,
+                      onTap: () => _showMoveDayModal(context, item, attraction, provider, isAr),
+                      child: const Padding(
+                        padding: EdgeInsets.all(6),
+                        child: Icon(Icons.swap_calls_rounded, color: AppColors.primaryPurple, size: 22),
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    AppleTouchable(
+                      pressedScale: 0.85,
                       onTap: () => _removeItem(item.id, provider),
                       child: const Padding(
                         padding: EdgeInsets.all(6),
-                        child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 24),
+                        child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
                       ),
                     ),
                   ],
@@ -715,6 +724,142 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
       hotelBudgetTier: _currentTrip.hotelBudgetTier,
       selectedHotelId: _currentTrip.selectedHotelId,
       items: updatedAllItems,
+      totalCostEgp: _currentTrip.totalCostEgp,
+      totalCostUsd: _currentTrip.totalCostUsd,
+      customImageUrl: _currentTrip.customImageUrl,
+    );
+
+    provider.updateTrip(updatedTrip);
+    setState(() => _currentTrip = updatedTrip);
+  }
+
+  void _showMoveDayModal(BuildContext context, ItineraryItem item, Attraction attraction, AppProvider provider, bool isAr) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderLight,
+                    borderRadius: BorderRadius.circular(2.5),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                isAr ? 'نقل المكان إلى يوم آخر في الرحلة' : 'Move Attraction to Another Day',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryPurple, letterSpacing: -0.3),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${isAr ? attraction.nameAr : attraction.nameEn} • ${isAr ? 'اليوم الحالي' : 'Current'}: Day ${item.dayNumber}',
+                style: const TextStyle(color: AppColors.mediumGray, fontSize: 13),
+              ),
+              const SizedBox(height: 20),
+
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: List.generate(_currentTrip.daysCount, (idx) {
+                  final dayNum = idx + 1;
+                  final isCurrent = item.dayNumber == dayNum;
+
+                  return AppleTouchable(
+                    pressedScale: 0.92,
+                    onTap: isCurrent
+                        ? null
+                        : () {
+                            _moveItemToDay(item, dayNum, provider);
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isAr
+                                      ? 'تم نقل ${attraction.nameAr} إلى اليوم $dayNum بنجاح!'
+                                      : 'Moved ${attraction.nameEn} to Day $dayNum successfully!',
+                                ),
+                                backgroundColor: AppColors.primaryPurple,
+                              ),
+                            );
+                          },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isCurrent ? AppColors.lightPurple : AppColors.primaryOrange,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isCurrent ? Icons.check_circle_rounded : Icons.calendar_today_rounded,
+                            color: isCurrent ? AppColors.primaryPurple : Colors.white,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${isAr ? 'اليوم' : 'Day'} $dayNum',
+                            style: TextStyle(
+                              color: isCurrent ? AppColors.primaryPurple : Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _moveItemToDay(ItineraryItem targetItem, int newDayNum, AppProvider provider) {
+    final timeSlots = ['09:00', '11:30', '14:00', '16:30', '19:00'];
+    final itemsForNewDay = _currentTrip.items.where((i) => i.dayNumber == newDayNum).toList();
+    final slotTime = itemsForNewDay.length < timeSlots.length ? timeSlots[itemsForNewDay.length] : '19:00';
+    int startHour = int.tryParse(slotTime.split(':')[0]) ?? 9;
+
+    final updatedItems = _currentTrip.items.map((i) {
+      if (i.id == targetItem.id) {
+        return ItineraryItem(
+          id: i.id,
+          attractionId: i.attractionId,
+          dayNumber: newDayNum,
+          startTime: slotTime,
+          endTime: '${(startHour + 2).toString().padLeft(2, '0')}:00',
+          notes: i.notes,
+        );
+      }
+      return i;
+    }).toList();
+
+    final updatedTrip = Trip(
+      id: _currentTrip.id,
+      title: _currentTrip.title,
+      destinationId: _currentTrip.destinationId,
+      startDate: _currentTrip.startDate,
+      endDate: _currentTrip.endDate,
+      daysCount: _currentTrip.daysCount,
+      travelerCount: _currentTrip.travelerCount,
+      status: _currentTrip.status,
+      hotelBudgetTier: _currentTrip.hotelBudgetTier,
+      selectedHotelId: _currentTrip.selectedHotelId,
+      items: updatedItems,
       totalCostEgp: _currentTrip.totalCostEgp,
       totalCostUsd: _currentTrip.totalCostUsd,
       customImageUrl: _currentTrip.customImageUrl,
