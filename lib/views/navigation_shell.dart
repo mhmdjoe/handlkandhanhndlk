@@ -104,16 +104,20 @@ class _NavigationShellState extends State<NavigationShell> {
       extendBody: true,
       body: Directionality(
         textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
-        child: NotificationListener<UserScrollNotification>(
+        child: NotificationListener<ScrollNotification>(
           onNotification: (notification) {
-            if (notification.direction == ScrollDirection.reverse) {
-              if (!_isHidden) {
-                setState(() => _isHidden = true);
+            if (notification is UserScrollNotification) {
+              if (notification.direction == ScrollDirection.reverse) {
+                if (!_isHidden && notification.metrics.pixels > 50) {
+                  setState(() => _isHidden = true);
+                }
+              } else if (notification.direction == ScrollDirection.forward) {
+                if (_isHidden) {
+                  setState(() => _isHidden = false);
+                }
               }
-            } else if (notification.direction == ScrollDirection.forward) {
-              if (_isHidden) {
-                setState(() => _isHidden = false);
-              }
+            } else if (notification.metrics.pixels <= 20 && _isHidden) {
+              setState(() => _isHidden = false);
             }
             return false;
           },
@@ -134,112 +138,122 @@ class _NavigationShellState extends State<NavigationShell> {
         ),
       ),
       bottomNavigationBar: AnimatedSlide(
-        duration: const Duration(milliseconds: 320),
-        curve: AppCurves.springSnappy,
-        offset: _isHidden ? const Offset(0, 1.5) : Offset.zero,
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 0),
-            child: Container(
-              height: 68,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(34),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 28,
-                    spreadRadius: 2,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(34),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: AppGradients.glassNavbarGradient,
-                      borderRadius: BorderRadius.circular(34),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.45),
-                        width: 1.2,
+        duration: const Duration(milliseconds: 380),
+        curve: _isHidden ? AppCurves.appleEase : AppCurves.springSnappy,
+        offset: _isHidden ? const Offset(0, 1.35) : Offset.zero,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 300),
+          curve: AppCurves.appleEase,
+          opacity: _isHidden ? 0.0 : 1.0,
+          child: AnimatedScale(
+            duration: const Duration(milliseconds: 380),
+            curve: _isHidden ? AppCurves.appleEase : AppCurves.springSnappy,
+            scale: _isHidden ? 0.92 : 1.0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 0),
+                child: Container(
+                  height: 68,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(34),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 28,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 10),
                       ),
-                    ),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final double barWidth = constraints.maxWidth;
-                        final double tabWidth = barWidth / navItems.length;
-                        const double pillWidth = 52.0;
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(34),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: AppGradients.glassNavbarGradient,
+                          borderRadius: BorderRadius.circular(34),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.45),
+                            width: 1.2,
+                          ),
+                        ),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final double barWidth = constraints.maxWidth;
+                            final double tabWidth = barWidth / navItems.length;
+                            const double pillWidth = 52.0;
 
-                        final double slotIndex = (isAr ? (navItems.length - 1 - _currentIndex) : _currentIndex).toDouble();
-                        final double slotCenter = (slotIndex + 0.5) * tabWidth;
-                        final double targetLeft = slotCenter - pillWidth / 2;
+                            final double slotIndex = (isAr ? (navItems.length - 1 - _currentIndex) : _currentIndex).toDouble();
+                            final double slotCenter = (slotIndex + 0.5) * tabWidth;
+                            final double targetLeft = slotCenter - pillWidth / 2;
 
-                        return Stack(
-                          children: [
-                            // 1. Sliding Active Orange Circle Icon Bubble (Icons Only)
-                            AnimatedPositioned(
-                              duration: const Duration(milliseconds: 260),
-                              curve: AppCurves.springSnappy,
-                              left: targetLeft,
-                              top: 8,
-                              width: pillWidth,
-                              height: 52,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: AppGradients.sunsetOrangeGradient,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.35),
-                                    width: 1.0,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.primaryOrange.withValues(alpha: 0.55),
-                                      blurRadius: 14,
-                                      spreadRadius: 1,
-                                      offset: const Offset(0, 4),
+                            return Stack(
+                              children: [
+                                // 1. Sliding Active Orange Circle Icon Bubble (Icons Only)
+                                AnimatedPositioned(
+                                  duration: const Duration(milliseconds: 260),
+                                  curve: AppCurves.springSnappy,
+                                  left: targetLeft,
+                                  top: 8,
+                                  width: pillWidth,
+                                  height: 52,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: AppGradients.sunsetOrangeGradient,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white.withValues(alpha: 0.35),
+                                        width: 1.0,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primaryOrange.withValues(alpha: 0.55),
+                                          blurRadius: 14,
+                                          spreadRadius: 1,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                                child: Center(
-                                  child: Icon(
-                                    navItems[_currentIndex].activeIcon,
-                                    color: Colors.white,
-                                    size: 24,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            // 2. Unselected Tab Icons Touch Layer
-                            Row(
-                              children: List.generate(navItems.length, (index) {
-                                final item = navItems[index];
-                                final isSelected = _currentIndex == index;
-
-                                return Expanded(
-                                  child: AppleTouchable(
-                                    enableHaptics: false,
-                                    pressedScale: 0.88,
-                                    onTap: () => _onTabChanged(index),
                                     child: Center(
-                                      child: isSelected
-                                          ? const SizedBox.shrink()
-                                          : Icon(
-                                              item.icon,
-                                              color: AppColors.darkGray,
-                                              size: 23,
-                                            ),
+                                      child: Icon(
+                                        navItems[_currentIndex].activeIcon,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
                                     ),
                                   ),
-                                );
-                              }),
-                            ),
-                          ],
-                        );
-                      },
+                                ),
+
+                                // 2. Unselected Tab Icons Touch Layer
+                                Row(
+                                  children: List.generate(navItems.length, (index) {
+                                    final item = navItems[index];
+                                    final isSelected = _currentIndex == index;
+
+                                    return Expanded(
+                                      child: AppleTouchable(
+                                        enableHaptics: false,
+                                        pressedScale: 0.88,
+                                        onTap: () => _onTabChanged(index),
+                                        child: Center(
+                                          child: isSelected
+                                              ? const SizedBox.shrink()
+                                              : Icon(
+                                                  item.icon,
+                                                  color: AppColors.darkGray,
+                                                  size: 23,
+                                                ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
                     ),
                   ),
                 ),
