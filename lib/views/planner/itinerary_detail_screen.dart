@@ -410,14 +410,14 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                           children: [
                             Text(
                               isAr ? selectedHotel.nameAr : selectedHotel.nameEn,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.primaryOrange, letterSpacing: -0.2),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.darkGray, letterSpacing: -0.2),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 2),
                             Text(
                               '${selectedHotel.starRating}★ • ${isAr ? selectedHotel.cityAr : selectedHotel.cityEn}',
-                              style: const TextStyle(color: AppColors.primaryOrange, fontSize: 12, fontWeight: FontWeight.bold),
+                              style: const TextStyle(color: AppColors.mediumGray, fontSize: 12, fontWeight: FontWeight.w600),
                             ),
                             const SizedBox(height: 4),
                             Text(
