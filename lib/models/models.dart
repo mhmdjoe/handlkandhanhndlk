@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import '../data/tourism_database.dart';
 
 enum CategoryType {
@@ -48,23 +47,6 @@ extension CategoryTypeExtension on CategoryType {
       case CategoryType.nature: return 'طبيعة ومغامرات';
       case CategoryType.nileCruise: return 'رحلات نيلية';
       case CategoryType.family: return 'ترفيه وعائلات';
-    }
-  }
-
-  IconData get icon {
-    switch (this) {
-      case CategoryType.archaeology: return Icons.account_balance_rounded;
-      case CategoryType.museum: return Icons.museum_rounded;
-      case CategoryType.beach: return Icons.beach_access_rounded;
-      case CategoryType.diving: return Icons.scuba_diving_rounded;
-      case CategoryType.safari: return Icons.landscape_rounded;
-      case CategoryType.culinary: return Icons.restaurant_rounded;
-      case CategoryType.religious: return Icons.church_rounded;
-      case CategoryType.market: return Icons.shopping_bag_rounded;
-      case CategoryType.oasis: return Icons.pool_rounded;
-      case CategoryType.nature: return Icons.nature_people_rounded;
-      case CategoryType.nileCruise: return Icons.directions_boat_rounded;
-      case CategoryType.family: return Icons.family_restroom_rounded;
     }
   }
 }
