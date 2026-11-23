@@ -61,14 +61,14 @@ class AppGradients {
     end: Alignment.centerRight,
   );
 
-  // Glassmorphic Navbar & Glass Bar Gradient
-  static const LinearGradient glassNavbarGradient = LinearGradient(
+  // Glassmorphic Liquid Frosted Glass Navbar Gradient
+  static LinearGradient glassNavbarGradient = LinearGradient(
     colors: [
-      Color(0xDC6B4EFF), // Translucent Electric Purple (86%)
-      Color(0xEC4A14B8), // Translucent Royal Indigo (92%)
+      Colors.white.withValues(alpha: 0.75),
+      Colors.white.withValues(alpha: 0.55),
     ],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 
   // Orange Highlight Accent Gradient (Mapped to Sunset Orange)

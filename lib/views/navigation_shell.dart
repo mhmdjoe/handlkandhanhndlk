@@ -144,9 +144,9 @@ class _NavigationShellState extends State<NavigationShell> {
               borderRadius: BorderRadius.circular(36),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.10),
-                  blurRadius: 24,
-                  spreadRadius: 1,
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 28,
+                  spreadRadius: 2,
                   offset: const Offset(0, 8),
                 ),
               ],
@@ -154,14 +154,14 @@ class _NavigationShellState extends State<NavigationShell> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(36),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: AppGradients.glassNavbarGradient,
                     borderRadius: BorderRadius.circular(36),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.28),
-                      width: 1.2,
+                      color: Colors.white.withValues(alpha: 0.65),
+                      width: 1.5,
                     ),
                   ),
                   child: LayoutBuilder(
@@ -229,7 +229,7 @@ class _NavigationShellState extends State<NavigationShell> {
                             ),
                           ),
 
-                          // 2. Unselected Tab Icons Touch Layer (Crisp White70 Glass Icons)
+                          // 2. Unselected Tab Icons Touch Layer (Crisp Dark Glass Contrast Icons)
                           Row(
                             children: List.generate(navItems.length, (index) {
                               final item = navItems[index];
@@ -245,7 +245,7 @@ class _NavigationShellState extends State<NavigationShell> {
                                         ? const SizedBox.shrink()
                                         : Icon(
                                             item.icon,
-                                            color: Colors.white70,
+                                            color: AppColors.darkGray,
                                             size: 22,
                                           ),
                                   ),
