@@ -56,7 +56,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
           constraints: const BoxConstraints(maxWidth: 900),
           child: Column(
             children: [
-              // Status Filter Chips (Neutral & Orange Palette)
+              // Status Filter Chips (Apple Modern Filter Bar)
               if (allTrips.isNotEmpty)
                 SizedBox(
                   height: 48,
@@ -65,64 +65,22 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     children: [
-                      AppleTouchable(
-                        pressedScale: 0.92,
-                        onTap: () => setState(() => _selectedStatusFilter = 'All'),
-                        child: ChoiceChip(
-                          label: Text(
-                            isAr ? 'جميع الرحلات (${allTrips.length})' : 'All Trips (${allTrips.length})',
-                            style: TextStyle(
-                              color: _selectedStatusFilter == 'All' ? Colors.white : AppColors.darkGray,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                          selected: _selectedStatusFilter == 'All',
-                          onSelected: null,
-                          selectedColor: AppColors.primaryOrange,
-                          backgroundColor: AppColors.surfaceMuted,
-                          checkmarkColor: Colors.white,
-                        ),
+                      _buildFilterChip(
+                        label: isAr ? 'جميع الرحلات (${allTrips.length})' : 'All Trips (${allTrips.length})',
+                        filterKey: 'All',
+                        isAr: isAr,
                       ),
                       const SizedBox(width: 8),
-                      AppleTouchable(
-                        pressedScale: 0.92,
-                        onTap: () => setState(() => _selectedStatusFilter = 'Active Journey'),
-                        child: ChoiceChip(
-                          label: Text(
-                            isAr ? 'رحلات قائمة' : 'Active Journeys',
-                            style: TextStyle(
-                              color: _selectedStatusFilter == 'Active Journey' ? Colors.white : AppColors.darkGray,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                          selected: _selectedStatusFilter == 'Active Journey',
-                          onSelected: null,
-                          selectedColor: AppColors.primaryOrange,
-                          backgroundColor: AppColors.surfaceMuted,
-                          checkmarkColor: Colors.white,
-                        ),
+                      _buildFilterChip(
+                        label: isAr ? 'رحلات قائمة' : 'Active Journeys',
+                        filterKey: 'Active Journey',
+                        isAr: isAr,
                       ),
                       const SizedBox(width: 8),
-                      AppleTouchable(
-                        pressedScale: 0.92,
-                        onTap: () => setState(() => _selectedStatusFilter = 'Confirmed'),
-                        child: ChoiceChip(
-                          label: Text(
-                            loc.translate('statusConfirmed'),
-                            style: TextStyle(
-                              color: _selectedStatusFilter == 'Confirmed' ? Colors.white : AppColors.darkGray,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                          selected: _selectedStatusFilter == 'Confirmed',
-                          onSelected: null,
-                          selectedColor: AppColors.primaryOrange,
-                          backgroundColor: AppColors.surfaceMuted,
-                          checkmarkColor: Colors.white,
-                        ),
+                      _buildFilterChip(
+                        label: loc.translate('statusConfirmed'),
+                        filterKey: 'Confirmed',
+                        isAr: isAr,
                       ),
                     ],
                   ),
@@ -136,11 +94,18 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.card_travel_rounded, size: 64, color: AppColors.mediumGray),
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: AppColors.lightPurple,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.card_travel_rounded, size: 54, color: AppColors.primaryPurple),
+                              ),
                               const SizedBox(height: 16),
                               Text(
                                 loc.translate('noTrips'),
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkGray),
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkGray, letterSpacing: -0.3),
                               ),
                               const SizedBox(height: 8),
                               Text(
@@ -156,18 +121,30 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                                     AppCupertinoPageRoute(page: const TripWizardScreen()),
                                   );
                                 },
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      AppCupertinoPageRoute(page: const TripWizardScreen()),
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primaryOrange,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                                  decoration: BoxDecoration(
+                                    gradient: AppGradients.royalPurpleGradient,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.primaryPurple.withValues(alpha: 0.3),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
                                   ),
-                                  icon: const Icon(Icons.auto_awesome_rounded),
-                                  label: Text(loc.translate('createFirstTrip')),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 20),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        loc.translate('createFirstTrip'),
+                                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
@@ -205,6 +182,29 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({required String label, required String filterKey, required bool isAr}) {
+    final isSel = _selectedStatusFilter == filterKey;
+    return AppleTouchable(
+      pressedScale: 0.92,
+      onTap: () => setState(() => _selectedStatusFilter = filterKey),
+      child: ChoiceChip(
+        label: Text(
+          label,
+          style: TextStyle(
+            color: isSel ? Colors.white : AppColors.darkGray,
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
+        ),
+        selected: isSel,
+        onSelected: null,
+        selectedColor: AppColors.primaryOrange,
+        backgroundColor: AppColors.surfaceMuted,
+        checkmarkColor: Colors.white,
       ),
     );
   }
@@ -265,6 +265,8 @@ class _SlidableTripCard extends StatefulWidget {
 class _SlidableTripCardState extends State<_SlidableTripCard> {
   @override
   Widget build(BuildContext context) {
+    final isActive = widget.trip.status == 'Active Journey';
+
     return Dismissible(
       key: ValueKey('trip_dismiss_${widget.trip.id}'),
       direction: DismissDirection.endToStart,
@@ -338,32 +340,42 @@ class _SlidableTripCardState extends State<_SlidableTripCard> {
                 children: [
                   SafeNetworkImage(
                     imageUrl: widget.trip.coverImageUrl,
-                    height: 140,
+                    height: 145,
                     width: double.infinity,
                     fit: BoxFit.cover,
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                   ),
                   Container(
-                    height: 140,
+                    height: 145,
                     decoration: BoxDecoration(
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                       gradient: LinearGradient(
-                        colors: [Colors.black.withValues(alpha: 0.70), Colors.transparent],
+                        colors: [
+                          Colors.black.withValues(alpha: 0.75),
+                          Colors.black.withValues(alpha: 0.20),
+                          Colors.transparent,
+                        ],
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                       ),
                     ),
                   ),
+                  // Status Badge Pill
                   Positioned(
                     top: 12,
                     right: 12,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: widget.trip.status == 'Active Journey'
-                            ? AppColors.primaryOrange
-                            : AppColors.darkGray,
-                        borderRadius: BorderRadius.circular(8),
+                        gradient: isActive ? AppGradients.sunsetOrangeGradient : AppGradients.royalPurpleGradient,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (isActive ? AppColors.primaryOrange : AppColors.primaryPurple).withValues(alpha: 0.35),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Text(
                         widget.trip.status,
@@ -371,28 +383,31 @@ class _SlidableTripCardState extends State<_SlidableTripCard> {
                       ),
                     ),
                   ),
+                  // Title & Subtitle Over Hero Cover Image
                   Positioned(
                     bottom: 12,
-                    left: 12,
-                    right: 12,
+                    left: 14,
+                    right: 14,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           widget.trip.title,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17, letterSpacing: -0.2),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: -0.3),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        const SizedBox(height: 2),
                         Text(
                           '${widget.isAr ? widget.dest.nameAr : widget.dest.nameEn} • ${widget.trip.daysCount} ${widget.loc.translate('days')}',
-                          style: const TextStyle(color: AppColors.primaryOrange, fontSize: 12, fontWeight: FontWeight.bold),
+                          style: const TextStyle(color: AppColors.lightOrange, fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
+              // Card Bottom Action Bar
               Padding(
                 padding: const EdgeInsets.all(14),
                 child: Row(
@@ -401,15 +416,16 @@ class _SlidableTripCardState extends State<_SlidableTripCard> {
                     Row(
                       children: [
                         const Icon(Icons.event_outlined, size: 16, color: AppColors.mediumGray),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 6),
                         Text(
                           '${widget.trip.startDate.day}/${widget.trip.startDate.month}/${widget.trip.startDate.year}',
-                          style: const TextStyle(fontSize: 12, color: AppColors.darkGray, fontWeight: FontWeight.w500),
+                          style: const TextStyle(fontSize: 13, color: AppColors.darkGray, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
                     Row(
                       children: [
+                        // Map Launcher Button
                         AppleTouchable(
                           pressedScale: 0.85,
                           onTap: () {
@@ -420,12 +436,17 @@ class _SlidableTripCardState extends State<_SlidableTripCard> {
                               ),
                             );
                           },
-                          child: const Padding(
-                            padding: EdgeInsets.all(6),
-                            child: Icon(Icons.map_outlined, color: AppColors.primaryOrange, size: 22),
+                          child: Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                              color: AppColors.lightPurple,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.map_rounded, color: AppColors.primaryPurple, size: 18),
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 8),
+                        // Delete Button
                         AppleTouchable(
                           pressedScale: 0.85,
                           onTap: () async {
@@ -453,15 +474,19 @@ class _SlidableTripCardState extends State<_SlidableTripCard> {
                               }
                             }
                           },
-                          child: const Padding(
-                            padding: EdgeInsets.all(6),
-                            child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
+                          child: Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade50,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 18),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 12),
                         Text(
                           widget.provider.formatPrice(widget.trip.totalCostEgp, widget.trip.totalCostUsd),
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryOrange, fontSize: 15),
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryOrange, fontSize: 16),
                         ),
                       ],
                     ),
