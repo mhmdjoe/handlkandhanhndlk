@@ -414,7 +414,7 @@ class _SlidableTripCardState extends State<_SlidableTripCard> {
                             Navigator.push(
                               context,
                               AppCupertinoPageRoute(
-                                page: const InteractiveMapScreen(),
+                                page: InteractiveMapScreen(trip: widget.trip),
                               ),
                             );
                           },

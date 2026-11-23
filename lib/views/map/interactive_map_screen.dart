@@ -13,7 +13,9 @@ import '../../widgets/add_to_trip_modal.dart';
 import '../explore/attraction_detail_screen.dart';
 
 class InteractiveMapScreen extends StatefulWidget {
-  const InteractiveMapScreen({super.key});
+  final Trip? trip;
+
+  const InteractiveMapScreen({super.key, this.trip});
 
   @override
   State<InteractiveMapScreen> createState() => _InteractiveMapScreenState();
@@ -34,7 +36,21 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedAttraction = TourismDatabase.attractions.first;
+    if (widget.trip != null && widget.trip!.items.isNotEmpty) {
+      final tripAttractionIds = widget.trip!.items.map((i) => i.attractionId).toSet();
+      final tripAttractions = TourismDatabase.attractions.where((a) => tripAttractionIds.contains(a.id)).toList();
+
+      if (tripAttractions.isNotEmpty) {
+        _centerLat = tripAttractions.map((a) => a.lat).reduce((a, b) => a + b) / tripAttractions.length;
+        _centerLng = tripAttractions.map((a) => a.lng).reduce((a, b) => a + b) / tripAttractions.length;
+        _zoomLevel = 10.5;
+        _selectedAttraction = tripAttractions.first;
+      } else {
+        _selectedAttraction = TourismDatabase.attractions.first;
+      }
+    } else {
+      _selectedAttraction = TourismDatabase.attractions.first;
+    }
   }
 
   void _centerOnDestination(Destination d) {
@@ -85,13 +101,25 @@ class _InteractiveMapScreenState extends State<InteractiveMapScreen> {
     final loc = AppLocalizations.of(context);
     final isAr = provider.isArabic;
 
+    final List<Attraction> allBaseAttractions;
+    if (widget.trip != null) {
+      final tripAttractionIds = widget.trip!.items.map((i) => i.attractionId).toSet();
+      allBaseAttractions = TourismDatabase.attractions.where((a) => tripAttractionIds.contains(a.id)).toList();
+    } else {
+      allBaseAttractions = TourismDatabase.attractions;
+    }
+
     final displayedAttractions = _selectedCategoryFilter == null
-        ? TourismDatabase.attractions
-        : TourismDatabase.attractions.where((a) => a.category == _selectedCategoryFilter).toList();
+        ? allBaseAttractions
+        : allBaseAttractions.where((a) => a.category == _selectedCategoryFilter).toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.translate('mapView')),
+        title: Text(
+          widget.trip != null
+              ? '${widget.trip!.title} (${displayedAttractions.length} ${isAr ? "أماكن" : "Places"})'
+              : loc.translate('mapView'),
+        ),
         actions: [
           AppleTouchable(
             onTap: _resetToFullEgyptView,
