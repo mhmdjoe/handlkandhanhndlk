@@ -31,89 +31,63 @@ class HomeScreen extends StatelessWidget {
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         slivers: [
-          // App Bar Hero Header with Professional Scroll Glassmorphism Overlay
+          // App Bar Hero Header with Apple Glassmorphism Overlay
           SliverAppBar(
-            expandedHeight: 200,
+            expandedHeight: 220,
             floating: false,
             pinned: true,
-            elevation: 0,
-            scrolledUnderElevation: 0,
             backgroundColor: AppColors.primaryPurple,
-            flexibleSpace: LayoutBuilder(
-              builder: (context, constraints) {
-                final double top = constraints.biggest.height;
-                final bool isCollapsed = top < (MediaQuery.of(context).padding.top + kToolbarHeight + 25);
-
-                return FlexibleSpaceBar(
-                  centerTitle: false,
-                  titlePadding: EdgeInsets.only(
-                    left: isAr ? 20 : 20,
-                    right: isAr ? 20 : 20,
-                    bottom: 14,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  const SafeNetworkImage(
+                    imageUrl: 'https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?q=80&w=1000&auto=format&fit=crop',
+                    fit: BoxFit.cover,
                   ),
-                  title: isCollapsed
-                      ? Text(
-                          loc.translate('appTitle'),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withValues(alpha: 0.85),
+                          Colors.black.withValues(alpha: 0.35),
+                          Colors.transparent,
+                        ],
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 20,
+                    left: 20,
+                    right: 20,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Image.asset(
+                          'assets/images/handelak_logo.png',
+                          height: 60,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          loc.translate('tagline'),
                           style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                            letterSpacing: -0.3,
+                            color: AppColors.lightPurple,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
                           ),
-                        )
-                      : null,
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      const SafeNetworkImage(
-                        imageUrl: 'https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?q=80&w=1000&auto=format&fit=crop',
-                        fit: BoxFit.cover,
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppColors.primaryPurple.withValues(alpha: 0.92),
-                              Colors.black.withValues(alpha: 0.40),
-                              Colors.transparent,
-                            ],
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      Positioned(
-                        bottom: 20,
-                        left: 20,
-                        right: 20,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Image.asset(
-                              'assets/images/handelak_logo.png',
-                              height: 56,
-                              fit: BoxFit.contain,
-                              filterQuality: FilterQuality.high,
-                              errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              loc.translate('tagline'),
-                              style: const TextStyle(
-                                color: AppColors.lightPurple,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                );
-              },
+                ],
+              ),
             ),
             actions: [
               AppleTouchable(
