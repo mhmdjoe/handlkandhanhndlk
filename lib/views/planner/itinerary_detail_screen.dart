@@ -565,6 +565,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
     }
 
     return ReorderableListView.builder(
+      buildDefaultDragHandles: false,
       physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 110),
       itemCount: dayItems.length,
@@ -576,72 +577,75 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
           orElse: () => TourismDatabase.attractions.first,
         );
 
-        return Container(
+        return ReorderableDelayedDragStartListener(
           key: ValueKey('item_${item.id}'),
-          margin: const EdgeInsets.only(bottom: 12),
-          child: AppleTouchable(
-            pressedScale: 0.97,
-            borderRadius: BorderRadius.circular(20),
-            onTap: () {
-              Navigator.push(
-                context,
-                AppCupertinoPageRoute(
-                  page: AttractionDetailScreen(attraction: attraction),
-                ),
-              );
-            },
-            child: Card(
-              margin: EdgeInsets.zero,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
-                      child: SafeNetworkImage(
-                        imageUrl: attraction.imageUrl,
-                        width: 70,
-                        height: 70,
-                        fit: BoxFit.cover,
+          index: index,
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: AppleTouchable(
+              pressedScale: 0.97,
+              borderRadius: BorderRadius.circular(20),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  AppCupertinoPageRoute(
+                    page: AttractionDetailScreen(attraction: attraction),
+                  ),
+                );
+              },
+              child: Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: SafeNetworkImage(
+                          imageUrl: attraction.imageUrl,
+                          width: 70,
+                          height: 70,
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isAr ? attraction.nameAr : attraction.nameEn,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: -0.2),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${item.startTime} • ${provider.formatPrice(attraction.priceEgp, attraction.priceUsd)}',
-                            style: const TextStyle(color: AppColors.primaryOrange, fontWeight: FontWeight.bold, fontSize: 13),
-                          ),
-                        ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isAr ? attraction.nameAr : attraction.nameEn,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: -0.2),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${item.startTime} • ${provider.formatPrice(attraction.priceEgp, attraction.priceUsd)}',
+                              style: const TextStyle(color: AppColors.primaryOrange, fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    AppleTouchable(
-                      pressedScale: 0.85,
-                      onTap: () => _showMoveDayModal(context, item, attraction, provider, isAr),
-                      child: const Padding(
-                        padding: EdgeInsets.all(6),
-                        child: Icon(Icons.swap_calls_rounded, color: AppColors.primaryPurple, size: 22),
+                      AppleTouchable(
+                        pressedScale: 0.85,
+                        onTap: () => _showMoveDayModal(context, item, attraction, provider, isAr),
+                        child: const Padding(
+                          padding: EdgeInsets.all(6),
+                          child: Icon(Icons.swap_calls_rounded, color: AppColors.primaryPurple, size: 22),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 2),
-                    AppleTouchable(
-                      pressedScale: 0.85,
-                      onTap: () => _removeItem(item.id, provider),
-                      child: const Padding(
-                        padding: EdgeInsets.all(6),
-                        child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
+                      const SizedBox(width: 2),
+                      AppleTouchable(
+                        pressedScale: 0.85,
+                        onTap: () => _removeItem(item.id, provider),
+                        child: const Padding(
+                          padding: EdgeInsets.all(6),
+                          child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
