@@ -38,6 +38,61 @@ class AppColors {
   static const Color darkBorder = Color(0xFF3D00B0);
 }
 
+class AppGradients {
+  // Royal Indigo & Electric Purple Gradient
+  static const LinearGradient royalPurpleGradient = LinearGradient(
+    colors: [
+      Color(0xFF7A52FF), // Vibrant Electric Purple
+      Color(0xFF5324D6), // Deep Royal Indigo
+      Color(0xFF3811A8), // Lapis Amethyst
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // Sunset Saffron Orange Gradient
+  static const LinearGradient sunsetOrangeGradient = LinearGradient(
+    colors: [
+      Color(0xFFFF6E40), // Bright Tangerine
+      Color(0xFFFF5008), // Primary Handelak Orange
+      Color(0xFFE64A19), // Deep Terracotta
+    ],
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+  );
+
+  // Glassmorphic Navbar Gradient
+  static const LinearGradient glassNavbarGradient = LinearGradient(
+    colors: [
+      Color(0xDC6B4EFF), // Translucent Electric Purple
+      Color(0xEC4A14B8), // Translucent Royal Indigo
+    ],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  // Pharaonic Gold Accent Gradient
+  static const LinearGradient goldAccentGradient = LinearGradient(
+    colors: [
+      Color(0xFFFFD54F), // Bright Gold
+      Color(0xFFFFB300), // Amber Gold
+      Color(0xFFD4AF37), // Metallic Pharaonic Gold
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // Soft Lavender Gradient for Chips & Cards
+  static const LinearGradient softLavenderGradient = LinearGradient(
+    colors: [
+      Color(0xFFF8F5FF),
+      Color(0xFFF1EBFF),
+    ],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+}
+
 class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(

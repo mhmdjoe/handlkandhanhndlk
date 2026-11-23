@@ -162,10 +162,10 @@ class _NavigationShellState extends State<NavigationShell> {
                 filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.primaryPurple.withValues(alpha: 0.86),
+                    gradient: AppGradients.glassNavbarGradient,
                     borderRadius: BorderRadius.circular(36),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.25),
+                      color: Colors.white.withValues(alpha: 0.28),
                       width: 1.2,
                     ),
                   ),
@@ -186,7 +186,7 @@ class _NavigationShellState extends State<NavigationShell> {
 
                       return Stack(
                         children: [
-                          // 1. Sliding Active Orange Shape Container containing the active Icon & Text (100% Centered)
+                          // 1. Sliding Active Orange Shape Container with Sunset Gradient (100% Centered)
                           AnimatedPositioned(
                             duration: const Duration(milliseconds: 260),
                             curve: AppCurves.springSnappy,
@@ -196,7 +196,7 @@ class _NavigationShellState extends State<NavigationShell> {
                             height: 52,
                             child: Container(
                               decoration: BoxDecoration(
-                                color: AppColors.primaryOrange,
+                                gradient: AppGradients.sunsetOrangeGradient,
                                 borderRadius: BorderRadius.circular(26),
                                 boxShadow: [
                                   BoxShadow(
