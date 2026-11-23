@@ -160,8 +160,8 @@ class _NavigationShellState extends State<NavigationShell> {
                     gradient: AppGradients.glassNavbarGradient,
                     borderRadius: BorderRadius.circular(36),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.75),
-                      width: 1.5,
+                      color: Colors.white.withValues(alpha: 0.45),
+                      width: 1.2,
                     ),
                   ),
                   child: LayoutBuilder(

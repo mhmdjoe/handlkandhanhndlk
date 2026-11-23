@@ -61,12 +61,12 @@ class AppGradients {
     end: Alignment.centerRight,
   );
 
-  // Apple Crystal Liquid Glass Dock Gradient (Ultra-Transparent)
+  // Apple Sheer Crystal Glass Dock Gradient (Maximum Transparency)
   static LinearGradient glassNavbarGradient = LinearGradient(
     colors: [
-      Colors.white.withValues(alpha: 0.32),
-      Colors.white.withValues(alpha: 0.18),
+      Colors.white.withValues(alpha: 0.16),
       Colors.white.withValues(alpha: 0.08),
+      Colors.white.withValues(alpha: 0.03),
     ],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
