@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
@@ -25,6 +26,7 @@ class NavigationShell extends StatefulWidget {
 class _NavigationShellState extends State<NavigationShell> {
   late int _currentIndex;
   late PageController _pageController;
+  bool _isMinimized = false;
 
   @override
   void initState() {
@@ -44,6 +46,7 @@ class _NavigationShellState extends State<NavigationShell> {
       HapticFeedback.selectionClick();
       setState(() {
         _currentIndex = index;
+        _isMinimized = false;
       });
       _pageController.animateToPage(
         index,
@@ -53,7 +56,11 @@ class _NavigationShellState extends State<NavigationShell> {
     }
   }
 
-  double _calculatePillWidth(String text, bool isRtl, double maxTabSlotWidth) {
+  double _calculatePillWidth(String text, bool isRtl, double maxTabSlotWidth, bool isMinimized) {
+    if (isMinimized) {
+      return 48.0; // Compact circular/pill shape when minimized on scroll down
+    }
+
     const TextStyle style = TextStyle(
       fontWeight: FontWeight.bold,
       fontSize: 13,
@@ -68,7 +75,7 @@ class _NavigationShellState extends State<NavigationShell> {
 
     // Icon (22) + gap (6) + text width + 28px padding
     double neededWidth = 22.0 + 6.0 + painter.width + 28.0;
-    return neededWidth.clamp(58.0, maxTabSlotWidth + 14.0);
+    return neededWidth.clamp(56.0, maxTabSlotWidth + 14.0);
   }
 
   @override
@@ -121,44 +128,61 @@ class _NavigationShellState extends State<NavigationShell> {
       extendBody: true,
       body: Directionality(
         textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
-        child: PageView(
-          controller: _pageController,
-          physics: const BouncingScrollPhysics(),
-          onPageChanged: (index) {
-            if (_currentIndex != index) {
-              HapticFeedback.selectionClick();
-              setState(() {
-                _currentIndex = index;
-              });
+        child: NotificationListener<UserScrollNotification>(
+          onNotification: (notification) {
+            if (notification.direction == ScrollDirection.reverse) {
+              if (!_isMinimized) {
+                setState(() => _isMinimized = true);
+              }
+            } else if (notification.direction == ScrollDirection.forward) {
+              if (_isMinimized) {
+                setState(() => _isMinimized = false);
+              }
             }
+            return false;
           },
-          children: screens,
+          child: PageView(
+            controller: _pageController,
+            physics: const BouncingScrollPhysics(),
+            onPageChanged: (index) {
+              if (_currentIndex != index) {
+                HapticFeedback.selectionClick();
+                setState(() {
+                  _currentIndex = index;
+                  _isMinimized = false;
+                });
+              }
+            },
+            children: screens,
+          ),
         ),
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 0),
-          child: Container(
-            height: 72,
+          padding: EdgeInsets.only(left: 16, right: 16, bottom: _isMinimized ? 8 : 12, top: 0),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: AppCurves.springSnappy,
+            height: _isMinimized ? 56 : 72,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(36),
+              borderRadius: BorderRadius.circular(_isMinimized ? 28 : 36),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 32,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 10),
+                  color: Colors.black.withValues(alpha: _isMinimized ? 0.08 : 0.15),
+                  blurRadius: _isMinimized ? 20 : 32,
+                  spreadRadius: _isMinimized ? 1 : 2,
+                  offset: Offset(0, _isMinimized ? 6 : 10),
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(36),
+              borderRadius: BorderRadius.circular(_isMinimized ? 28 : 36),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: AppGradients.glassNavbarGradient,
-                    borderRadius: BorderRadius.circular(36),
+                    borderRadius: BorderRadius.circular(_isMinimized ? 28 : 36),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.45),
                       width: 1.2,
@@ -170,7 +194,7 @@ class _NavigationShellState extends State<NavigationShell> {
                       final double tabWidth = barWidth / navItems.length;
 
                       final String activeLabelText = loc.translate(navItems[_currentIndex].labelKey);
-                      final double pillWidth = _calculatePillWidth(activeLabelText, isAr, tabWidth);
+                      final double pillWidth = _calculatePillWidth(activeLabelText, isAr, tabWidth, _isMinimized);
 
                       final double slotIndex = (isAr ? (navItems.length - 1 - _currentIndex) : _currentIndex).toDouble();
                       final double slotCenter = (slotIndex + 0.5) * tabWidth;
@@ -181,18 +205,18 @@ class _NavigationShellState extends State<NavigationShell> {
 
                       return Stack(
                         children: [
-                          // 1. Sliding Active Orange Shape Container (Liquid Apple Orange Sheen)
+                          // 1. Sliding Active Orange Shape Container (Scroll-Minimized Adaptation)
                           AnimatedPositioned(
-                            duration: const Duration(milliseconds: 260),
+                            duration: const Duration(milliseconds: 300),
                             curve: AppCurves.springSnappy,
                             left: targetLeft,
-                            top: 10,
+                            top: _isMinimized ? 7 : 10,
                             width: pillWidth,
-                            height: 52,
+                            height: _isMinimized ? 42 : 52,
                             child: Container(
                               decoration: BoxDecoration(
                                 gradient: AppGradients.sunsetOrangeGradient,
-                                borderRadius: BorderRadius.circular(26),
+                                borderRadius: BorderRadius.circular(_isMinimized ? 21 : 26),
                                 border: Border.all(
                                   color: Colors.white.withValues(alpha: 0.35),
                                   width: 1.0,
@@ -200,7 +224,7 @@ class _NavigationShellState extends State<NavigationShell> {
                                 boxShadow: [
                                   BoxShadow(
                                     color: AppColors.primaryOrange.withValues(alpha: 0.55),
-                                    blurRadius: 16,
+                                    blurRadius: _isMinimized ? 10 : 16,
                                     spreadRadius: 1,
                                     offset: const Offset(0, 4),
                                   ),
@@ -213,9 +237,9 @@ class _NavigationShellState extends State<NavigationShell> {
                                     Icon(
                                       navItems[_currentIndex].activeIcon,
                                       color: Colors.white,
-                                      size: 22,
+                                      size: _isMinimized ? 20 : 22,
                                     ),
-                                    if (constraints.maxWidth >= 340) ...[
+                                    if (!_isMinimized && constraints.maxWidth >= 340) ...[
                                       const SizedBox(width: 6),
                                       Text(
                                         activeLabelText,
@@ -233,7 +257,7 @@ class _NavigationShellState extends State<NavigationShell> {
                             ),
                           ),
 
-                          // 2. Unselected Tab Icons Touch Layer (Crisp Dark Glass Contrast Icons)
+                          // 2. Unselected Tab Icons Touch Layer
                           Row(
                             children: List.generate(navItems.length, (index) {
                               final item = navItems[index];
@@ -250,7 +274,7 @@ class _NavigationShellState extends State<NavigationShell> {
                                         : Icon(
                                             item.icon,
                                             color: AppColors.darkGray,
-                                            size: 22,
+                                            size: _isMinimized ? 20 : 22,
                                           ),
                                   ),
                                 ),
