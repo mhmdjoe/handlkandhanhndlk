@@ -72,29 +72,30 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
         title: Text(_currentTrip.title),
         actions: [
           AppleTouchable(
-            onTap: () => _showPrintVoucherModal(context, provider, isAr),
+            onTap: () => _showExpenseTrackerModal(context, provider, isAr, grandTotalEgp, grandTotalUsd),
             child: const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Icon(Icons.print_outlined, color: AppColors.primaryPurple, size: 22),
+              padding: EdgeInsets.all(6.0),
+              child: Icon(Icons.account_balance_wallet_outlined, color: AppColors.primaryPurple, size: 22),
             ),
           ),
           AppleTouchable(
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(isAr ? 'تم نسخ رابط الرحلة لمشاركته بالكامل!' : 'Whole trip itinerary copied!'),
-                ),
-              );
-            },
+            onTap: () => _showEmergencyQuickDialModal(context, isAr),
             child: const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Icon(Icons.share_outlined, color: AppColors.primaryPurple, size: 22),
+              padding: EdgeInsets.all(6.0),
+              child: Icon(Icons.shield_outlined, color: AppColors.primaryOrange, size: 22),
+            ),
+          ),
+          AppleTouchable(
+            onTap: () => _showPrintVoucherModal(context, provider, isAr),
+            child: const Padding(
+              padding: EdgeInsets.all(6.0),
+              child: Icon(Icons.print_outlined, color: AppColors.primaryPurple, size: 22),
             ),
           ),
           AppleTouchable(
             onTap: () => _showDeleteTripConfirmation(context, provider, isAr),
             child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
+              padding: EdgeInsets.only(left: 6, right: 12),
               child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
             ),
           ),
@@ -544,10 +545,30 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
   Widget _buildDayItemsListView(BuildContext context, AppProvider provider, bool isAr, int dayNum) {
     final dayItems = _currentTrip.items.where((item) => item.dayNumber == dayNum).toList();
 
-    return ListView.builder(
+    if (dayItems.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.event_note_rounded, size: 54, color: AppColors.mediumGray),
+              const SizedBox(height: 12),
+              Text(
+                isAr ? 'لا توجد أنشطة مجدولة لهذا اليوم' : 'No activities scheduled for this day',
+                style: const TextStyle(color: AppColors.mediumGray, fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ReorderableListView.builder(
       physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 110),
       itemCount: dayItems.length,
+      onReorderItem: (oldIndex, newIndex) => _reorderDayItems(dayNum, oldIndex, newIndex, provider),
       itemBuilder: (context, index) {
         final item = dayItems[index];
         final attraction = TourismDatabase.attractions.firstWhere(
@@ -555,8 +576,9 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
           orElse: () => TourismDatabase.attractions.first,
         );
 
-        return StaggeredEntranceItem(
-          index: index,
+        return Container(
+          key: ValueKey('item_${item.id}'),
+          margin: const EdgeInsets.only(bottom: 12),
           child: AppleTouchable(
             pressedScale: 0.97,
             borderRadius: BorderRadius.circular(20),
@@ -569,17 +591,19 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
               );
             },
             child: Card(
-              margin: const EdgeInsets.only(bottom: 12),
+              margin: EdgeInsets.zero,
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
+                    const Icon(Icons.drag_indicator_rounded, color: AppColors.mediumGray, size: 20),
+                    const SizedBox(width: 8),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(14),
                       child: SafeNetworkImage(
                         imageUrl: attraction.imageUrl,
-                        width: 75,
-                        height: 75,
+                        width: 70,
+                        height: 70,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -648,6 +672,313 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
 
     provider.updateTrip(updatedTrip);
     setState(() => _currentTrip = updatedTrip);
+  }
+
+  void _reorderDayItems(int dayNum, int oldIndex, int newIndex, AppProvider provider) {
+    final dayItems = _currentTrip.items.where((item) => item.dayNumber == dayNum).toList();
+    final otherDayItems = _currentTrip.items.where((item) => item.dayNumber != dayNum).toList();
+
+    final movedItem = dayItems.removeAt(oldIndex);
+    dayItems.insert(newIndex, movedItem);
+
+    final timeSlots = ['09:00', '11:30', '14:00', '16:30', '19:00'];
+    final reorderedItemsForDay = <ItineraryItem>[];
+
+    for (int i = 0; i < dayItems.length; i++) {
+      final item = dayItems[i];
+      final slotTime = i < timeSlots.length ? timeSlots[i] : '19:00';
+      int startHour = int.tryParse(slotTime.split(':')[0]) ?? 9;
+
+      reorderedItemsForDay.add(
+        ItineraryItem(
+          id: item.id,
+          attractionId: item.attractionId,
+          dayNumber: item.dayNumber,
+          startTime: slotTime,
+          endTime: '${(startHour + 2).toString().padLeft(2, '0')}:00',
+          notes: item.notes,
+        ),
+      );
+    }
+
+    final updatedAllItems = [...otherDayItems, ...reorderedItemsForDay];
+
+    final updatedTrip = Trip(
+      id: _currentTrip.id,
+      title: _currentTrip.title,
+      destinationId: _currentTrip.destinationId,
+      startDate: _currentTrip.startDate,
+      endDate: _currentTrip.endDate,
+      daysCount: _currentTrip.daysCount,
+      travelerCount: _currentTrip.travelerCount,
+      status: _currentTrip.status,
+      hotelBudgetTier: _currentTrip.hotelBudgetTier,
+      selectedHotelId: _currentTrip.selectedHotelId,
+      items: updatedAllItems,
+      totalCostEgp: _currentTrip.totalCostEgp,
+      totalCostUsd: _currentTrip.totalCostUsd,
+      customImageUrl: _currentTrip.customImageUrl,
+    );
+
+    provider.updateTrip(updatedTrip);
+    setState(() => _currentTrip = updatedTrip);
+  }
+
+  void _showExpenseTrackerModal(BuildContext context, AppProvider provider, bool isAr, double estimatedEgp, double estimatedUsd) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderLight,
+                    borderRadius: BorderRadius.circular(2.5),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primaryPurple, size: 28),
+                  const SizedBox(width: 10),
+                  Text(
+                    isAr ? 'متابعة المصاريف والميزانية المباشرة' : 'Live Expense & Budget Tracker',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryPurple, letterSpacing: -0.3),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Summary Box
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.lightPurple,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isAr ? 'الميزانية المخططة' : 'Estimated Planned',
+                          style: const TextStyle(color: AppColors.mediumGray, fontSize: 12),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          provider.formatPrice(estimatedEgp, estimatedUsd),
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryPurple),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      width: 1,
+                      height: 36,
+                      color: AppColors.borderLight,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          isAr ? 'الحالة' : 'Budget Status',
+                          style: const TextStyle(color: AppColors.mediumGray, fontSize: 12),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          isAr ? 'في النطاق الآمن 🟢' : 'On Track 🟢',
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.verifiedGreen),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              Text(
+                isAr ? 'المصاريف المجدولة بالرحلة:' : 'Scheduled Attraction Fees:',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.darkGray),
+              ),
+              const SizedBox(height: 10),
+
+              Expanded(
+                child: ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: _currentTrip.items.length,
+                  itemBuilder: (context, index) {
+                    final item = _currentTrip.items[index];
+                    final attraction = TourismDatabase.attractions.firstWhere(
+                      (a) => a.id == item.attractionId,
+                      orElse: () => TourismDatabase.attractions.first,
+                    );
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceMuted,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.confirmation_number_outlined, color: AppColors.primaryOrange, size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              isAr ? attraction.nameAr : attraction.nameEn,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            provider.formatPrice(attraction.priceEgp, attraction.priceUsd),
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkGray, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 12),
+              AppleTouchable(
+                onTap: () => Navigator.pop(context),
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    backgroundColor: AppColors.primaryPurple,
+                  ),
+                  child: Text(isAr ? 'تم، إغلاق المصاريف' : 'Done'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showEmergencyQuickDialModal(BuildContext context, bool isAr) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderLight,
+                    borderRadius: BorderRadius.circular(2.5),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              Row(
+                children: [
+                  const Icon(Icons.shield_rounded, color: AppColors.primaryOrange, size: 28),
+                  const SizedBox(width: 10),
+                  Text(
+                    isAr ? 'طوارئ وأمان السائح في مصر' : 'Tourist Emergency & Safety Hotline',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryPurple, letterSpacing: -0.3),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                isAr ? 'أرقام الطوارئ المعتمدة والمباشرة للسياح والزائرين' : 'Official direct emergency numbers for travelers across Egypt.',
+                style: const TextStyle(color: AppColors.mediumGray, fontSize: 13),
+              ),
+              const SizedBox(height: 20),
+
+              _emergencyContactTile(
+                isAr ? 'شرطة السياحة المصرية (24/7)' : 'Egypt Tourist Police (24/7)',
+                '126',
+                Icons.local_police_rounded,
+                AppColors.primaryPurple,
+                isAr,
+              ),
+              _emergencyContactTile(
+                isAr ? 'خط طوارئ الإسعاف' : 'Ambulance Emergency',
+                '123',
+                Icons.local_hospital_rounded,
+                Colors.redAccent,
+                isAr,
+              ),
+              _emergencyContactTile(
+                isAr ? 'الخط الساخن لوزارة السياحة' : 'Ministry of Tourism Helpline',
+                '19792',
+                Icons.support_agent_rounded,
+                AppColors.primaryOrange,
+                isAr,
+              ),
+              _emergencyContactTile(
+                isAr ? 'طوارئ الحماية المدنية (الإطفاء)' : 'Fire Department Emergency',
+                '180',
+                Icons.local_fire_department_rounded,
+                Colors.deepOrange,
+                isAr,
+              ),
+
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _emergencyContactTile(String title, String phone, IconData icon, Color color, bool isAr) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceMuted,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: ListTile(
+        leading: Icon(icon, color: color, size: 26),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        subtitle: Text('Call: $phone', style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+        trailing: AppleTouchable(
+          pressedScale: 0.88,
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(isAr ? 'جاري الاتصال بـ $phone...' : 'Dialing $phone...')),
+            );
+          },
+          child: CircleAvatar(
+            backgroundColor: color,
+            child: const Icon(Icons.phone_in_talk_rounded, color: Colors.white, size: 20),
+          ),
+        ),
+      ),
+    );
   }
 
   void _showDeleteTripConfirmation(BuildContext context, AppProvider provider, bool isAr) {
