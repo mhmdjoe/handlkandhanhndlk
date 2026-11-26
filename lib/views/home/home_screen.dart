@@ -8,6 +8,7 @@ import '../../theme/app_theme.dart';
 import '../../theme/app_motion.dart';
 import '../../widgets/apple_touchable.dart';
 import '../../widgets/network_image_with_fallback.dart';
+import '../../widgets/currency_converter_modal.dart';
 import '../explore/attraction_detail_screen.dart';
 import '../explore/destination_detail_screen.dart';
 
@@ -91,13 +92,27 @@ class HomeScreen extends StatelessWidget {
             ),
             actions: [
               AppleTouchable(
+                onTap: () => showCurrencyConverterModal(context),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.20),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.currency_exchange_rounded, color: Colors.white, size: 20),
+                  ),
+                ),
+              ),
+              AppleTouchable(
                 onTap: () {
                   appProvider.setLocale(
                     isAr ? const Locale('en') : const Locale('ar'),
                   );
                 },
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(

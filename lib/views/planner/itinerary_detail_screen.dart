@@ -9,6 +9,7 @@ import '../../theme/app_theme.dart';
 import '../../theme/app_motion.dart';
 import '../../widgets/apple_touchable.dart';
 import '../../widgets/network_image_with_fallback.dart';
+import '../../widgets/currency_converter_modal.dart';
 import '../explore/attraction_detail_screen.dart';
 
 class ItineraryDetailScreen extends StatefulWidget {
@@ -71,6 +72,13 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
       appBar: AppBar(
         title: Text(_currentTrip.title),
         actions: [
+          AppleTouchable(
+            onTap: () => showCurrencyConverterModal(context),
+            child: const Padding(
+              padding: EdgeInsets.all(6.0),
+              child: Icon(Icons.currency_exchange_rounded, color: AppColors.primaryOrange, size: 22),
+            ),
+          ),
           AppleTouchable(
             onTap: () => _showExpenseTrackerModal(context, provider, isAr, grandTotalEgp, grandTotalUsd),
             child: const Padding(
