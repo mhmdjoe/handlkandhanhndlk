@@ -180,24 +180,6 @@ class ProfileScreen extends StatelessWidget {
                         ),
                         const Divider(height: 1, indent: 16, endIndent: 16),
                         ListTile(
-                          leading: const Icon(Icons.attach_money_rounded, color: AppColors.primaryOrange),
-                          title: Text(loc.translate('currency'), style: const TextStyle(fontWeight: FontWeight.w600)),
-                          trailing: DropdownButton<String>(
-                            value: provider.currency,
-                            underline: const SizedBox(),
-                            items: const [
-                              DropdownMenuItem(value: 'EGP', child: Text('EGP (ج.م)', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DropdownMenuItem(value: 'USD', child: Text('USD (\$)', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DropdownMenuItem(value: 'EUR', child: Text('EUR (€)', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DropdownMenuItem(value: 'GBP', child: Text('GBP (£)', style: TextStyle(fontWeight: FontWeight.bold))),
-                            ],
-                            onChanged: (val) {
-                              if (val != null) provider.setCurrency(val);
-                            },
-                          ),
-                        ),
-                        const Divider(height: 1, indent: 16, endIndent: 16),
-                        ListTile(
                           leading: const Icon(Icons.currency_exchange_rounded, color: AppColors.primaryPurple),
                           title: Text(
                             provider.isArabic ? 'حاسبة تحويل العملات المباشرة' : 'Live Currency Converter',
