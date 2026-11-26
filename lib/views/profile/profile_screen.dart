@@ -4,6 +4,7 @@ import '../../providers/app_provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_motion.dart';
+import '../../services/currency_service.dart';
 import '../../widgets/apple_touchable.dart';
 import '../../widgets/currency_converter_modal.dart';
 import '../auth/login_screen.dart';
@@ -179,14 +180,46 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ),
                         const Divider(height: 1, indent: 16, endIndent: 16),
-                        ListTile(
-                          leading: const Icon(Icons.currency_exchange_rounded, color: AppColors.primaryPurple),
-                          title: Text(
-                            provider.isArabic ? 'حاسبة تحويل العملات المباشرة' : 'Live Currency Converter',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.mediumGray),
-                          onTap: () => showCurrencyConverterModal(context),
+                        Builder(
+                          builder: (context) {
+                            final curr = provider.currency;
+                            final currencyObj = CurrencyService.currencies.firstWhere(
+                              (c) => c.code == curr,
+                              orElse: () => CurrencyService.currencies[0],
+                            );
+
+                            return ListTile(
+                              leading: const Icon(Icons.currency_exchange_rounded, color: AppColors.primaryOrange),
+                              title: Text(
+                                provider.isArabic ? 'عملة عرض التطبيق' : 'App Display Currency',
+                                style: const TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.lightOrange,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: AppColors.primaryOrange.withValues(alpha: 0.4)),
+                                    ),
+                                    child: Text(
+                                      '${currencyObj.flagSymbol} $curr',
+                                      style: const TextStyle(
+                                        color: AppColors.primaryOrange,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.mediumGray),
+                                ],
+                              ),
+                              onTap: () => showCurrencyConverterModal(context),
+                            );
+                          },
                         ),
                       ],
                     ),

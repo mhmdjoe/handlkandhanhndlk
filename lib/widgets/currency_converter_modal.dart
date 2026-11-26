@@ -123,8 +123,14 @@ class CurrencyPickerModal extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              currency.code,
-                              style: const TextStyle(color: AppColors.mediumGray, fontSize: 12),
+                              currency.code == 'EGP'
+                                  ? (isAr ? 'العملة الأساسية (جم)' : 'Base Currency (EGP)')
+                                  : '1 ${currency.code} ≈ ${currency.rateToEgp.toStringAsFixed(1)} EGP',
+                              style: TextStyle(
+                                color: isSelected ? AppColors.primaryOrange : AppColors.mediumGray,
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
                             ),
                           ],
                         ),
